@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cobalt Caffe | Elevated Coffee Culture</title>
+  <meta name="description" content="Experience the next evolution of coffee culture at Cobalt Caffe. Where precision brewing meets modern urban design in the heart of the city.">
+  <link rel="canonical" href="https://cobaltcaffe.com/">
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cobaltcaffe.com/">
+  <meta property="og:title" content="Cobalt Caffe | Elevated Coffee Culture">
+  <meta property="og:description" content="Precision brewing meets modern urban design in the heart of the financial district.">
+  <meta property="og:image" content="https://cobaltcaffe.com/hero.png">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://cobaltcaffe.com/">
+  <meta name="twitter:title" content="Cobalt Caffe | Elevated Coffee Culture">
+  <meta name="twitter:description" content="Precision brewing meets modern urban design in the heart of the financial district.">
+  <meta name="twitter:image" content="https://cobaltcaffe.com/hero.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <a href="index.html" class="logo">Cobalt Caffe</a>
+      <nav class="nav" id="main-nav">
+        <a href="index.html" class="nav-link active">Home</a>
+        <a href="menu.html" class="nav-link">Menu</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="gallery.html" class="nav-link">Gallery</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+      </nav>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero" id="home">
+      <img src="hero.png" alt="Rustic Cafe Interior" class="hero-bg">
+      <div class="hero-overlay"></div>
+      <div class="container hero-content">
+        <span class="hero-tagline">Elevated Coffee. Electric Soul.</span>
+        <h1>Experience Modern<br>Coffee Culture</h1>
+        <p>Located in the heart of the financial district, where precision brewing meets sleek urban design.</p>
+        <div class="hero-actions">
+          <a href="menu.html" class="btn btn-primary">
+            <span class="material-symbols-outlined">menu_book</span> View Our Menu
+          </a>
+          <a href="contact.html" class="btn btn-secondary">
+            <span class="material-symbols-outlined">event_seat</span> Reserve a Table
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bento Grid -->
+    <section class="container reveal" id="location" style="scroll-margin-top:100px; padding-top:var(--space-lg);">
+      <div class="bento-grid">
+        <div class="card card-visit">
+          <div class="card-icon"><span class="material-symbols-outlined">location_on</span></div>
+          <h2>Visit Us</h2>
+          <address style="font-style:normal;color:var(--on-surface-variant);margin-bottom:20px;">
+            42 Cobalt Plaza<br>
+            Financial District, DL 110001<br>
+            New Delhi, India
+          </address>
+          <div style="border-top:1px solid var(--surface-container-high);padding-top:20px;">
+            <p style="font-weight:600;margin-bottom:5px;">Direct Line</p>
+            <p style="display:flex;align-items:center;gap:8px;font-size:.9rem;">
+              <span class="material-symbols-outlined" style="font-size:1.2rem;">call</span> +91 11 4000 8000
+            </p>
+          </div>
+        </div>
+
+        <div class="card card-hours">
+          <div class="card-icon"><span class="material-symbols-outlined">schedule</span></div>
+          <h2>Opening Hours</h2>
+          <ul class="hours-list">
+            <li><span>Monday — Friday</span><span>07:00 – 21:00</span></li>
+            <li><span>Saturday</span><span>08:00 – 22:00</span></li>
+            <li><span>Sunday</span><span>09:00 – 20:00</span></li>
+          </ul>
+          <div style="margin-top:auto;padding-top:20px;display:flex;align-items:flex-start;gap:10px;font-size:.8rem;opacity:.8;">
+            <span class="material-symbols-outlined">notifications_active</span>
+            <p>Public holidays may vary. Follow our socials for updates.</p>
+          </div>
+        </div>
+
+        <div class="card card-image">
+          <img src="espresso.png" alt="Artisanal Espresso">
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Menu -->
+    <section class="container section-padding reveal" id="menu" style="scroll-margin-top:80px;">
+      <div style="text-align:center;margin-bottom:var(--space-lg);">
+        <span class="section-label">Our Craft</span>
+        <h2 class="section-title">Signature Brews</h2>
+        <p style="color:var(--on-surface-variant);max-width:520px;margin:0 auto;">Precisely crafted, scientifically brewed, and served with urban energy.</p>
+      </div>
+      <div id="featured-menu-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:var(--space-md);">
+        <!-- Items populated by JS -->
+      </div>
+    </section>
+
+    <!-- Why Us -->
+    <section class="container section-padding reveal">
+      <div style="text-align:center;margin-bottom:var(--space-lg);">
+        <span class="section-label">Why Cobalt Caffe</span>
+        <h2 class="section-title">More Than Just Coffee</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-md);">
+        <div class="value-card">
+          <div class="value-icon">⚡</div>
+          <h3 class="value-title">Precision Roasts</h3>
+          <p style="color:var(--on-surface-variant);font-size:.9rem;">Single-origin beans roasted to perfection with state-of-the-art technology.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">🌐</div>
+          <h3 class="value-title">Global Sourcing</h3>
+          <p style="color:var(--on-surface-variant);font-size:.9rem;">Direct-trade partnerships with the world's most innovative coffee farms.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">🏙️</div>
+          <h3 class="value-title">Architectural Space</h3>
+          <p style="color:var(--on-surface-variant);font-size:.9rem;">A sleek, minimalist environment designed for focus and inspiration.</p>
+        </div>
+        <div class="value-card">
+          <div class="value-icon">📱</div>
+          <h3 class="value-title">Tech-Integrated</h3>
+          <p style="color:var(--on-surface-variant);font-size:.9rem;">Seamless ordering, high-speed fiber, and a workspace optimized for the modern professional.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-logo">Cobalt Caffe</div>
+          <p style="color:var(--on-surface-variant);max-width:280px;">Elevating coffee culture since 2024. Your urban hub for precision brewing and modern ambiance.</p>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Social</h4>
+          <ul class="footer-links">
+            <li><a href="https://instagram.com/cobaltcaffe" target="_blank" rel="noopener">Instagram</a></li>
+            <li><a href="https://facebook.com/cobaltcaffe" target="_blank" rel="noopener">Facebook</a></li>
+            <li><a href="https://twitter.com/cobaltcaffe" target="_blank" rel="noopener">Twitter / X</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Newsletter</h4>
+          <p style="color:var(--on-surface-variant);font-size:.9rem;margin-bottom:12px;">Get updates on events and specials.</p>
+          <div class="newsletter">
+            <input type="email" placeholder="Your email" id="newsletter-email">
+            <button class="btn-send"><span class="material-symbols-outlined" style="font-size:1rem;">send</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2024 Cobalt Caffe. Crafted with Modern Heritage.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, query, where, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { firebaseConfig } from "./firebase-config.js";
+    import "./auth-nav.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Hamburger
+    const hamburger = document.getElementById('hamburger');
+    const nav = document.getElementById('main-nav');
+    hamburger.addEventListener('click', () => nav.classList.toggle('open'));
+
+    // Dynamic Featured Menu
+    async function loadFeaturedMenu() {
+      const container = document.getElementById('featured-menu-grid');
+      try {
+        // Get up to 2 signature/bestseller items
+        const q = query(collection(db, "menu"), limit(2));
+        const snapshot = await getDocs(q);
+        
+        container.innerHTML = '';
+        snapshot.forEach(docSnap => {
+          const item = docSnap.data();
+          const card = document.createElement('div');
+          card.className = 'card menu-card reveal visible';
+          card.innerHTML = `
+            <div style="overflow:hidden;border-radius:var(--radius-md) var(--radius-md) 0 0;margin:-24px -24px 0;">
+              <img src="${item.image || 'espresso.png'}" alt="${item.name}" class="menu-card-img">
+            </div>
+            <div style="padding-top:var(--space-md);">
+              <h3 class="menu-card-title">${item.name}</h3>
+              <p class="menu-card-desc">${item.description.substring(0, 80)}...</p>
+              <div class="menu-card-footer">
+                <span class="menu-price">₹${item.price}</span>
+                ${item.tag ? `<span class="tag">${item.tag}</span>` : ''}
+              </div>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+        // Add the CTA card
+        const cta = document.createElement('div');
+        cta.className = 'card menu-card reveal visible';
+        cta.style.cssText = 'background:var(--primary-container);border-color:transparent;justify-content:center;align-items:center;text-align:center;min-height:300px;';
+        cta.innerHTML = `
+          <span class="material-symbols-outlined" style="font-size:3rem;color:var(--on-primary-container);margin-bottom:16px;">menu_book</span>
+          <h3 style="color:var(--on-primary-container);margin-bottom:12px;">Explore Full Menu</h3>
+          <p style="color:rgba(193,156,148,.85);margin-bottom:24px;font-size:.9rem;">Coffees, teas, cold brews, food & more.</p>
+          <a href="menu.html" class="btn btn-secondary" style="background:transparent;color:var(--on-primary-container);border-color:var(--on-primary-container);">
+            View All Items <span class="material-symbols-outlined">arrow_forward</span>
+          </a>
+        `;
+        container.appendChild(cta);
+
+      } catch (e) {
+        console.error("Error loading featured menu:", e);
+      }
+    }
+
+    loadFeaturedMenu();
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); observer.unobserve(e.target); } });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    reveals.forEach(el => observer.observe(el));
+
+    // Nav smooth scroll on same page anchors
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelector(a.getAttribute('href'))?.scrollIntoView({behavior:'smooth'});
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In | Cobalt Caffe</title>
+  <meta name="description" content="Sign in or create an account at Cobalt Caffe to manage reservations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { min-height:100vh; display:flex; flex-direction:column; }
+    .auth-page {
+      flex:1; display:grid; grid-template-columns:1fr 1fr; min-height:calc(100vh - 80px);
+    }
+    /* Left panel — branding */
+    .auth-brand {
+      background: var(--primary);
+      display:flex; flex-direction:column; justify-content:center;
+      padding: var(--space-xl);
+      position: relative; overflow:hidden;
+    }
+    .auth-brand::before {
+      content:''; position:absolute; inset:0;
+      background: url('hero.png') center/cover no-repeat;
+      opacity:.18; z-index:0;
+    }
+    .auth-brand-inner { position:relative; z-index:1; }
+    .auth-brand-logo {
+      font-family: var(--font-heading); font-size:2rem; font-weight:700;
+      color:#fff; margin-bottom:var(--space-xl);
+    }
+    .auth-brand h2 { color:#fff; font-size:2.4rem; line-height:1.3; margin-bottom:var(--space-md); }
+    .auth-brand p { color:rgba(255,255,255,.72); font-size:1rem; line-height:1.7; margin-bottom:var(--space-lg); }
+    .auth-brand-features { display:flex; flex-direction:column; gap:14px; }
+    .auth-feature { display:flex; align-items:center; gap:12px; color:rgba(255,255,255,.85); font-size:.9rem; }
+    .auth-feature .material-symbols-outlined { color:var(--secondary-container); font-size:1.2rem; }
+
+    /* Right panel — form */
+    .auth-form-panel {
+      display:flex; align-items:center; justify-content:center;
+      padding: var(--space-xl); background: var(--background);
+    }
+    .auth-box { width:100%; max-width:420px; }
+    .auth-box h1 { font-size:1.8rem; margin-bottom:6px; }
+    .auth-box .auth-sub { color:var(--on-surface-variant); font-size:.9rem; margin-bottom:var(--space-lg); }
+
+    /* Tabs */
+    .auth-tabs { display:flex; border-bottom:2px solid var(--surface-container-high); margin-bottom:var(--space-lg); }
+    .auth-tab {
+      flex:1; text-align:center; padding:.75rem; cursor:pointer;
+      font-weight:600; color:var(--on-surface-variant);
+      border-bottom:2px solid transparent; margin-bottom:-2px;
+      transition:all .25s ease; font-family:var(--font-body); background:none; border-top:none; border-left:none; border-right:none;
+      font-size:.95rem;
+    }
+    .auth-tab.active { color:var(--primary); border-bottom-color:var(--primary); }
+
+    /* Form panel */
+    .auth-panel { display:none; }
+    .auth-panel.active { display:block; }
+    .auth-field { display:flex; flex-direction:column; gap:7px; margin-bottom:var(--space-md); }
+    .auth-field label { font-weight:600; font-size:.85rem; color:var(--primary); }
+    .auth-field input {
+      padding:12px 14px; border-radius:var(--radius-default);
+      border:1.5px solid var(--surface-container-highest);
+      font-family:var(--font-body); font-size:.95rem;
+      transition:border-color .3s, box-shadow .3s;
+    }
+    .auth-field input:focus {
+      outline:none; border-color:var(--secondary);
+      box-shadow:0 0 0 3px rgba(80,101,42,.12);
+    }
+    .auth-field input.error { border-color:#ba1a1a; }
+    
+    .btn-toggle-pass {
+      position:absolute; right:10px; top:50%; transform:translateY(-50%);
+      background:none; border:none; cursor:pointer; color:var(--on-surface-variant);
+      display:flex; align-items:center; justify-content:center; padding:4px;
+    }
+    .btn-toggle-pass:hover { color:var(--primary); }
+    .btn-toggle-pass .material-symbols-outlined { font-size:1.2rem; }
+
+    .auth-btn {
+      width:100%; padding:13px; border-radius:var(--radius-default);
+      font-family:var(--font-body); font-weight:700; font-size:1rem;
+      cursor:pointer; transition:all .25s ease; border:none;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+    }
+    .auth-btn-primary { background:var(--primary); color:#fff; margin-bottom:14px; }
+    .auth-btn-primary:hover { opacity:.9; transform:translateY(-1px); box-shadow:var(--shadow-md); }
+    .auth-btn-google {
+      background:#fff; color:#1b1c1c; border:1.5px solid var(--surface-container-high);
+      margin-bottom:var(--space-md);
+    }
+    .auth-btn-google:hover { background:var(--surface-container-low); transform:translateY(-1px); }
+    .google-icon { width:20px; height:20px; }
+
+    .divider { display:flex; align-items:center; gap:12px; margin:var(--space-md) 0; }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--surface-container-high); }
+    .divider span { color:var(--on-surface-variant); font-size:.82rem; white-space:nowrap; }
+
+    .auth-error {
+      background:#ffdad6; color:#93000a; border-radius:var(--radius-default);
+      padding:10px 14px; font-size:.85rem; margin-bottom:var(--space-md);
+      display:none; align-items:center; gap:8px;
+    }
+    .auth-error.show { display:flex; }
+
+    .forgot-link { text-align:right; margin-top:-10px; margin-bottom:var(--space-md); }
+    .forgot-link a { font-size:.82rem; color:var(--secondary); }
+    .forgot-link a:hover { text-decoration:underline; }
+
+    .auth-footer-note { text-align:center; font-size:.82rem; color:var(--on-surface-variant); margin-top:var(--space-md); }
+    .auth-footer-note a { color:var(--secondary); }
+    .auth-footer-note a:hover { text-decoration:underline; }
+
+    /* Loading spinner overlay */
+    .auth-loading {
+      position:fixed; inset:0; background:rgba(252,249,248,.8);
+      display:none; align-items:center; justify-content:center;
+      z-index:9999; flex-direction:column; gap:16px;
+    }
+    .auth-loading.show { display:flex; }
+    .spinner {
+      width:40px; height:40px; border-radius:50%;
+      border:3px solid var(--surface-container-high);
+      border-top-color:var(--primary);
+      animation:spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    @media(max-width:768px){
+      .auth-page { grid-template-columns:1fr; }
+      .auth-brand { display:none; }
+      .auth-form-panel { padding:var(--space-lg) var(--space-md); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container">
+      <a href="index.html" class="logo">Cobalt Caffe</a>
+      <nav class="nav" id="main-nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="menu.html" class="nav-link">Menu</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="gallery.html" class="nav-link">Gallery</a>
+        <a href="contact.html" class="nav-link">Contact</a>
+      </nav>
+      <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+    </div>
+  </header>
+
+  <!-- Loading overlay -->
+  <div class="auth-loading" id="auth-loading">
+    <div class="spinner"></div>
+    <p style="font-weight:600;color:var(--primary);">Signing you in…</p>
+  </div>
+
+  <div class="auth-page">
+    <!-- Left: Branding -->
+    <div class="auth-brand">
+      <div class="auth-brand-inner">
+        <div class="auth-brand-logo">Cobalt Caffe</div>
+        <h2>Experience the next<br>evolution of coffee.</h2>
+        <p>Join the Cobalt community for precision brewing, high-speed ambiance, and exclusive member perks in the heart of the city.</p>
+        <div class="auth-brand-features">
+          <div class="auth-feature"><span class="material-symbols-outlined">bolt</span> High-speed connectivity & workspaces</div>
+          <div class="auth-feature"><span class="material-symbols-outlined">biotech</span> Precision-brewed specialty roasts</div>
+          <div class="auth-feature"><span class="material-symbols-outlined">schedule</span> Priority seating & smart-ordering</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Auth Form -->
+    <div class="auth-form-panel">
+      <div class="auth-box">
+        <h1>Welcome back</h1>
+        <p class="auth-sub">Sign in to your account or create a new one.</p>
+
+        <!-- Tabs -->
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
+          <button class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Create Account</button>
+        </div>
+
+        <!-- Error -->
+        <div class="auth-error" id="auth-error">
+          <span class="material-symbols-outlined" style="font-size:1.1rem;">error</span>
+          <span id="auth-error-msg">Something went wrong.</span>
+        </div>
+
+        <!-- Google -->
+        <button class="auth-btn auth-btn-google" id="google-btn">
+          <svg class="google-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <div class="divider"><span>or continue with email</span></div>
+
+        <!-- Sign In Panel -->
+        <div class="auth-panel active" id="panel-signin">
+          <div class="auth-field">
+            <label for="signin-email">Email Address</label>
+            <input type="email" id="signin-email" placeholder="you@example.com" autocomplete="email">
+          </div>
+          <div class="auth-field">
+            <label for="signin-password">Password</label>
+            <div style="position:relative;">
+              <input type="password" id="signin-password" placeholder="Your password" autocomplete="current-password" style="width:100%; box-sizing:border-box; padding-right:40px;">
+              <button type="button" class="btn-toggle-pass" onclick="togglePassword('signin-password', this)" tabindex="-1">
+                <span class="material-symbols-outlined">visibility</span>
+              </button>
+            </div>
+          </div>
+          <div class="forgot-link">
+            <a href="#" id="forgot-link">Forgot password?</a>
+          </div>
+          <button class="auth-btn auth-btn-primary" id="signin-btn">
+            <span class="material-symbols-outlined">login</span> Sign In
+          </button>
+          <p class="auth-footer-note">Don't have an account? <a href="#" onclick="switchTab('signup')">Create one</a></p>
+        </div>
+
+        <!-- Sign Up Panel -->
+        <div class="auth-panel" id="panel-signup">
+          <div class="auth-field">
+            <label for="signup-name">Full Name</label>
+            <input type="text" id="signup-name" placeholder="e.g. Aisha Khan" autocomplete="name">
+          </div>
+          <div class="auth-field">
+            <label for="signup-email">Email Address</label>
+            <input type="email" id="signup-email" placeholder="you@example.com" autocomplete="email">
+          </div>
+          <div class="auth-field">
+            <label for="signup-password">Password</label>
+            <div style="position:relative;">
+              <input type="password" id="signup-password" placeholder="Min. 8 characters" autocomplete="new-password" style="width:100%; box-sizing:border-box; padding-right:40px;">
+              <button type="button" class="btn-toggle-pass" onclick="togglePassword('signup-password', this)" tabindex="-1">
+                <span class="material-symbols-outlined">visibility</span>
+              </button>
+            </div>
+          </div>
+          <button class="auth-btn auth-btn-primary" id="signup-btn">
+            <span class="material-symbols-outlined">person_add</span> Create Account
+          </button>
+          <p class="auth-footer-note">Already have an account? <a href="#" onclick="switchTab('signin')">Sign in</a></p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+      signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail,
+      onAuthStateChanged, updateProfile
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { firebaseConfig, ADMIN_EMAIL } from "./firebase-config.js";
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    // If already logged in, redirect
+    onAuthStateChanged(auth, user => {
+      if (user) redirectUser(user);
+    });
+
+    function redirectUser(user) {
+      if (user.email === ADMIN_EMAIL) {
+        window.location.href = "admin.html";
+      } else {
+        const returnTo = new URLSearchParams(window.location.search).get("return") || "index.html";
+        window.location.href = returnTo;
+      }
+    }
+
+    function showLoading(v) {
+      document.getElementById("auth-loading").classList.toggle("show", v);
+    }
+    function showError(msg) {
+      const el = document.getElementById("auth-error");
+      document.getElementById("auth-error-msg").textContent = msg;
+      el.classList.add("show");
+    }
+    function hideError() { document.getElementById("auth-error").classList.remove("show"); }
+
+    function friendlyError(code) {
+      const map = {
+        "auth/user-not-found":       "No account found with this email.",
+        "auth/wrong-password":       "Incorrect password. Please try again.",
+        "auth/invalid-credential":   "Invalid email or password.",
+        "auth/email-already-in-use": "An account with this email already exists.",
+        "auth/weak-password":        "Password must be at least 6 characters.",
+        "auth/invalid-email":        "Please enter a valid email address.",
+        "auth/popup-closed-by-user": "Google sign-in was cancelled.",
+        "auth/network-request-failed":"Network error — please check your connection.",
+      };
+      return map[code] || "Something went wrong. Please try again.";
+    }
+
+    // Tab switch
+    window.switchTab = function(tab) {
+      hideError();
+      document.querySelectorAll(".auth-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".auth-panel").forEach(p => p.classList.remove("active"));
+      document.getElementById("tab-" + tab).classList.add("active");
+      document.getElementById("panel-" + tab).classList.add("active");
+      document.querySelector(".auth-box h1").textContent = tab === "signin" ? "Welcome back" : "Create account";
+    };
+
+    // Toggle Password
+    window.togglePassword = function(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const icon = btn.querySelector('.material-symbols-outlined');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        input.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    };
+
+    // Sign In
+    document.getElementById("signin-btn").addEventListener("click", async () => {
+      hideError();
+      const email = document.getElementById("signin-email").value.trim();
+      const pass  = document.getElementById("signin-password").value;
+      if (!email || !pass) { showError("Please fill in all fields."); return; }
+      showLoading(true);
+      try {
+        const cred = await signInWithEmailAndPassword(auth, email, pass);
+        redirectUser(cred.user);
+      } catch(e) {
+        showLoading(false);
+        showError(friendlyError(e.code));
+      }
+    });
+
+    // Sign Up
+    document.getElementById("signup-btn").addEventListener("click", async () => {
+      hideError();
+      const name  = document.getElementById("signup-name").value.trim();
+      const email = document.getElementById("signup-email").value.trim();
+      const pass  = document.getElementById("signup-password").value;
+      if (!name || !email || !pass) { showError("Please fill in all fields."); return; }
+      if (pass.length < 8) { showError("Password must be at least 8 characters."); return; }
+      showLoading(true);
+      try {
+        const cred = await createUserWithEmailAndPassword(auth, email, pass);
+        await updateProfile(cred.user, { displayName: name });
+        redirectUser(cred.user);
+      } catch(e) {
+        showLoading(false);
+        showError(friendlyError(e.code));
+      }
+    });
+
+    // Google
+    document.getElementById("google-btn").addEventListener("click", async () => {
+      hideError();
+      showLoading(true);
+      try {
+        const cred = await signInWithPopup(auth, provider);
+        redirectUser(cred.user);
+      } catch(e) {
+        showLoading(false);
+        showError(friendlyError(e.code));
+      }
+    });
+
+    // Forgot password
+    document.getElementById("forgot-link").addEventListener("click", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("signin-email").value.trim();
+      if (!email) { showError("Enter your email above first, then click Forgot Password."); return; }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        hideError();
+        alert(`Password reset email sent to ${email}. Check your inbox.`);
+      } catch(e) {
+        showError(friendlyError(e.code));
+      }
+    });
+
+    // Enter key support
+    document.addEventListener("keydown", e => {
+      if (e.key !== "Enter") return;
+      const activeTab = document.querySelector(".auth-tab.active").id;
+      if (activeTab === "tab-signin") document.getElementById("signin-btn").click();
+      else document.getElementById("signup-btn").click();
+    });
+
+    document.getElementById("hamburger").addEventListener("click", () =>
+      document.getElementById("main-nav").classList.toggle("open"));
+  </script>
+</body>
+</html>

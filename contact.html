@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact & Reservations | Cobalt Caffe</title>
+  <meta name="description" content="Get in touch with Cobalt Caffe for table reservations, catering enquiries, events, or just to say hello.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Two-column layout */
+    .contact-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: var(--space-xl);
+      align-items: start;
+    }
+
+    /* Info sidebar */
+    .contact-sidebar { display: flex; flex-direction: column; gap: var(--space-md); }
+
+    .info-block {
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--surface-container-high);
+      border-radius: var(--radius-lg);
+      padding: var(--space-md);
+    }
+    .info-block-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: var(--space-sm);
+    }
+    .info-block-icon {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: rgba(80,101,42,.1); color: var(--secondary);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .info-block-title { font-size: 1rem; font-family: var(--font-heading); }
+    .info-block-body { color: var(--on-surface-variant); font-size: .9rem; line-height: 1.7; }
+    .info-block-body a { color: var(--secondary); }
+    .info-block-body a:hover { text-decoration: underline; }
+
+    .hours-mini { display: flex; flex-direction: column; gap: 6px; }
+    .hours-mini-row { display: flex; justify-content: space-between; font-size: .88rem; }
+    .hours-mini-row span:first-child { color: var(--on-surface-variant); }
+    .hours-mini-row span:last-child { font-weight: 600; }
+
+    /* Social icons row */
+    .social-row { display: flex; gap: 10px; margin-top: 10px; }
+    .social-btn {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--surface-container); border: 1px solid var(--surface-container-high);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 700; color: var(--on-surface-variant);
+      cursor: pointer; transition: all .2s ease;
+    }
+    .social-btn:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    /* Map placeholder */
+    .map-box {
+      background: var(--surface-container);
+      border-radius: var(--radius-lg);
+      height: 200px;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 10px;
+      border: 1px solid var(--surface-container-high);
+      color: var(--on-surface-variant);
+      font-size: .9rem;
+      overflow: hidden;
+    }
+
+    /* Main form card */
+    .contact-form-card {
+      background: var(--surface-container-lowest);
+      border: 1px solid var(--surface-container-high);
+      border-radius: var(--radius-xl);
+      padding: var(--space-lg);
+      box-shadow: var(--shadow-md);
+    }
+    .contact-form-card h2 { font-size: 1.9rem; margin-bottom: 6px; }
+    .contact-form-card .sub { color: var(--on-surface-variant); margin-bottom: var(--space-lg); font-size: .95rem; }
+
+    /* Booking type selector */
+    .booking-type { display: flex; gap: 10px; margin-bottom: var(--space-md); flex-wrap: wrap; }
+    .booking-chip {
+      padding: .5rem 1.2rem; border-radius: var(--radius-full);
+      border: 1.5px solid var(--outline); background: transparent;
+      font-family: var(--font-body); font-weight: 600; font-size: .85rem;
+      cursor: pointer; color: var(--on-surface-variant); transition: all .22s ease;
+    }
+    .booking-chip.active, .booking-chip:hover {
+      background: var(--primary); color: #fff; border-color: var(--primary);
+    }
+
+    .form-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); }
+    .form-full { grid-column: span 2; }
+
+    .submit-row { display: flex; align-items: center; gap: var(--space-md); margin-top: var(--space-md); }
+    .submit-note { font-size: .82rem; color: var(--on-surface-variant); }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--primary); color: #fff; padding: 14px 28px;
+      border-radius: var(--radius-full); font-weight: 600; font-size: .92rem;
+      box-shadow: var(--shadow-lg); z-index: 9999;
+      transition: transform .4s cubic-bezier(.4,0,.2,1), opacity .4s ease;
+      opacity: 0; pointer-events: none;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* FAQ */
+    .faq-item {
+      border-bottom: 1px solid var(--surface-container-high);
+      padding: var(--space-md) 0;
+    }
+    .faq-question {
+      width: 100%; background: none; border: none; text-align: left;
+      font-family: var(--font-heading); font-size: 1rem; color: var(--primary);
+      cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+      gap: 16px; padding: 0;
+    }
+    .faq-question .material-symbols-outlined { transition: transform .3s ease; flex-shrink: 0; }
+    .faq-question.open .material-symbols-outlined { transform: rotate(180deg); }
+    .faq-answer { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+    .faq-answer p { color: var(--on-surface-variant); font-size: .9rem; line-height: 1.7; padding-top: 10px; }
+
+    @media(max-width: 900px) {
+      .contact-layout { grid-template-columns: 1fr; }
+      .form-two-col { grid-template-columns: 1fr; }
+      .form-full { grid-column: span 1; }
+      .submit-row { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="container">
+      <a href="index.html" class="logo">Cobalt Caffe</a>
+      <nav class="nav" id="main-nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="menu.html" class="nav-link">Menu</a>
+        <a href="about.html" class="nav-link">About</a>
+        <a href="gallery.html" class="nav-link">Gallery</a>
+        <a href="contact.html" class="nav-link active">Contact</a>
+      </nav>
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Page Hero -->
+    <div class="page-hero">
+      <img src="hero.png" alt="Cafe interior" class="page-hero-bg">
+      <div class="page-hero-overlay"></div>
+      <div class="container page-hero-content">
+        <p class="breadcrumb"><a href="index.html" style="color:rgba(255,255,255,.7);">Home</a> / Contact</p>
+        <h1>Get in Touch</h1>
+      </div>
+    </div>
+
+    <div class="container section-padding">
+      <div class="contact-layout">
+
+        <!-- LEFT: Info Sidebar -->
+        <aside class="contact-sidebar">
+
+          <!-- Address -->
+          <div class="info-block reveal">
+            <div class="info-block-header">
+              <div class="info-block-icon"><span class="material-symbols-outlined">location_on</span></div>
+              <h3 class="info-block-title">Find Us</h3>
+            </div>
+            <div class="info-block-body">
+              42 Cobalt Plaza<br>
+              Financial District, DL 110001<br>
+              New Delhi, India
+            </div>
+            <!-- Map embed placeholder -->
+            <div class="map-box" style="margin-top:var(--space-sm);">
+              <span class="material-symbols-outlined" style="font-size:2.5rem;color:var(--secondary);">map</span>
+              <span>Financial District, New Delhi</span>
+              <a href="https://maps.google.com" target="_blank" rel="noopener" class="btn btn-ghost" style="padding:.5rem 1.2rem;font-size:.85rem;margin-top:4px;">
+                Open in Google Maps <span class="material-symbols-outlined" style="font-size:1rem;">open_in_new</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Phone & Email -->
+          <div class="info-block reveal">
+            <div class="info-block-header">
+              <div class="info-block-icon"><span class="material-symbols-outlined">contacts</span></div>
+              <h3 class="info-block-title">Contact Details</h3>
+            </div>
+            <div class="info-block-body">
+              <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+                <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--secondary);">call</span>
+                <a href="tel:+911140008000">+91 11 4000 8000</a>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+                <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--secondary);">mail</span>
+                <a href="mailto:hello@cobaltcaffe.com">hello@cobaltcaffe.com</a>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--secondary);">event_seat</span>
+                <a href="mailto:reserve@cobaltcaffe.com">reserve@cobaltcaffe.com</a>
+              </div>
+            </div>
+            <div class="social-row">
+              <div class="social-btn" title="Instagram">Ig</div>
+              <div class="social-btn" title="Facebook">Fb</div>
+              <div class="social-btn" title="Twitter/X">X</div>
+              <div class="social-btn" title="WhatsApp">Wa</div>
+            </div>
+          </div>
+
+          <!-- Hours -->
+          <div class="info-block reveal">
+            <div class="info-block-header">
+              <div class="info-block-icon"><span class="material-symbols-outlined">schedule</span></div>
+              <h3 class="info-block-title">Opening Hours</h3>
+            </div>
+            <div class="hours-mini">
+              <div class="hours-mini-row"><span>Monday – Friday</span><span>07:00 – 21:00</span></div>
+              <div class="hours-mini-row"><span>Saturday</span><span>08:00 – 22:00</span></div>
+              <div class="hours-mini-row"><span>Sunday</span><span>09:00 – 20:00</span></div>
+            </div>
+            <p style="font-size:.8rem;color:var(--on-surface-variant);margin-top:12px;display:flex;align-items:center;gap:6px;">
+              <span class="material-symbols-outlined" style="font-size:1rem;">info</span>
+              Hours may vary on public holidays.
+            </p>
+          </div>
+
+          <!-- Availability -->
+          <div class="info-block reveal">
+            <div class="info-block-header">
+              <div class="info-block-icon"><span class="material-symbols-outlined">event_seat</span></div>
+              <h3 class="info-block-title">Live Availability</h3>
+            </div>
+            <div class="info-block-body">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span>Today's Tables</span>
+                <span id="avail-count" style="font-weight:700; font-size:1.2rem; color:var(--primary);">--</span>
+              </div>
+              <div style="width:100%; background:var(--surface-container-high); height:6px; border-radius:3px; overflow:hidden;">
+                <div id="avail-bar" style="width:0%; background:var(--primary); height:100%; transition:width 0.8s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+              </div>
+              <p style="font-size:0.8rem; color:var(--on-surface-variant); margin-top:10px;">
+                Walk-ins subject to availability. Book ahead to guarantee your spot.
+              </p>
+            </div>
+          </div>
+
+        </aside>
+
+        <!-- RIGHT: Contact Form -->
+        <div class="contact-form-card reveal">
+          <h2>Send Us a Message</h2>
+          <p class="sub">We typically respond within 24 hours. For urgent reservations, please call us directly.</p>
+
+          <!-- Enquiry Type -->
+          <p style="font-weight:600;font-size:.88rem;color:var(--primary);margin-bottom:10px;">I'm reaching out about…</p>
+          <div class="booking-type" id="booking-chips">
+            <button class="booking-chip active" data-type="General Inquiry">General Inquiry</button>
+            <button class="booking-chip" data-type="Table Reservation">Table Reservation</button>
+            <button class="booking-chip" data-type="Catering / Events">Catering / Events</button>
+            <button class="booking-chip" data-type="Feedback">Feedback</button>
+          </div>
+
+          <form id="contact-form" novalidate>
+            <div class="form-two-col">
+              <div class="form-group">
+                <label for="cf-name">Full Name <span style="color:var(--secondary);">*</span></label>
+                <input type="text" id="cf-name" placeholder="e.g. Aisha Khan" required>
+              </div>
+              <div class="form-group">
+                <label for="cf-email">Email Address <span style="color:var(--secondary);">*</span></label>
+                <input type="email" id="cf-email" placeholder="aisha@example.com" required>
+              </div>
+              <div class="form-group">
+                <label for="cf-phone">Phone Number</label>
+                <input type="tel" id="cf-phone" placeholder="+91 98765 43210">
+              </div>
+              <div class="form-group">
+                <label for="cf-guests">Number of Guests</label>
+                <select id="cf-guests">
+                  <option value="">— Select —</option>
+                  <option>1 – 2</option>
+                  <option>3 – 5</option>
+                  <option>6 – 10</option>
+                  <option>10+</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="cf-date">Preferred Date</label>
+                <input type="date" id="cf-date">
+              </div>
+              <div class="form-group">
+                <label for="cf-time">Preferred Time</label>
+                <select id="cf-time">
+                  <option value="">— Select —</option>
+                  <option>07:00 – 09:00</option>
+                  <option>09:00 – 11:00</option>
+                  <option>11:00 – 13:00</option>
+                  <option>13:00 – 15:00</option>
+                  <option>15:00 – 17:00</option>
+                  <option>17:00 – 19:00</option>
+                  <option>19:00 – 21:00</option>
+                </select>
+              </div>
+              <div class="form-group form-full">
+                <label for="cf-subject">Subject <span style="color:var(--secondary);">*</span></label>
+                <input type="text" id="cf-subject" placeholder="Brief subject of your message" required>
+              </div>
+              <div class="form-group form-full">
+                <label for="cf-message">Your Message <span style="color:var(--secondary);">*</span></label>
+                <textarea id="cf-message" rows="5" placeholder="Tell us how we can help you today…" required></textarea>
+              </div>
+            </div>
+
+            <div class="submit-row">
+              <button type="submit" class="btn btn-primary" id="submit-btn">
+                <span class="material-symbols-outlined">send</span> Send Message
+              </button>
+              <p class="submit-note">
+                <span class="material-symbols-outlined" style="font-size:1rem;vertical-align:middle;">lock</span>
+                Your info is private and never shared.
+              </p>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- FAQ Section -->
+      <div style="margin-top:var(--space-xl);">
+        <div style="text-align:center;margin-bottom:var(--space-lg);" class="reveal">
+          <span class="section-label">Common Questions</span>
+          <h2 class="section-title">FAQ</h2>
+        </div>
+        <div style="max-width:740px;margin:0 auto;" class="reveal">
+
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+              Do you accept walk-ins or is reservation required?
+              <span class="material-symbols-outlined">expand_more</span>
+            </button>
+            <div class="faq-answer">
+              <p>Walk-ins are always welcome! However, for groups of 5 or more, or for weekend evenings, we strongly recommend a reservation to guarantee your table.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+              Do you offer vegan or gluten-free options?
+              <span class="material-symbols-outlined">expand_more</span>
+            </button>
+            <div class="faq-answer">
+              <p>Yes! We have clearly marked vegan, vegetarian, and gluten-free items across our menu. Our kitchen also takes allergen precautions — just let your server know.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+              Can I host a private event at Cobalt Caffe?
+              <span class="material-symbols-outlined">expand_more</span>
+            </button>
+            <div class="faq-answer">
+              <p>Absolutely. Our Executive Lounge can accommodate private bookings for up to 40 guests. Reach out via the form above or email us at reserve@cobaltcaffe.com with your requirements.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+              Is there parking available nearby?
+              <span class="material-symbols-outlined">expand_more</span>
+            </button>
+            <div class="faq-answer">
+              <p>There is a public car park at Cobalt Plaza just under the building. Valet parking is also available for our guests.</p>
+            </div>
+          </div>
+
+          <div class="faq-item">
+            <button class="faq-question" aria-expanded="false">
+              Do you offer a loyalty or rewards programme?
+              <span class="material-symbols-outlined">expand_more</span>
+            </button>
+            <div class="faq-answer">
+              <p>Yes — our Heritage Card gives you a free drink after every 9 purchases. Ask any of our baristas to get started. A digital version is coming soon!</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast">
+    <span class="material-symbols-outlined">check_circle</span>
+    Message sent! We'll be in touch soon.
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-logo">Cobalt Caffe</div>
+          <p style="color:var(--on-surface-variant);max-width:280px;">Elevating coffee culture since 2024.</p>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Social</h4>
+          <ul class="footer-links">
+            <li><a href="https://instagram.com/cobaltcaffe" target="_blank" rel="noopener">Instagram</a></li>
+            <li><a href="https://facebook.com/cobaltcaffe" target="_blank" rel="noopener">Facebook</a></li>
+            <li><a href="https://twitter.com/cobaltcaffe" target="_blank" rel="noopener">Twitter / X</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Newsletter</h4>
+          <p style="color:var(--on-surface-variant);font-size:.9rem;margin-bottom:12px;">Get updates on events and specials.</p>
+          <div class="newsletter">
+            <input type="email" placeholder="Your email">
+            <button class="btn-send"><span class="material-symbols-outlined" style="font-size:1rem;">send</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom"><p>© 2024 Cobalt Caffe. Crafted with Modern Heritage.</p></div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { firebaseConfig, TOTAL_TABLES } from "./firebase-config.js";
+    import "./auth-nav.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // Hamburger
+    document.getElementById('hamburger').addEventListener('click', () =>
+      document.getElementById('main-nav').classList.toggle('open'));
+
+    // Booking chips
+    let selectedType = 'General Inquiry';
+    document.querySelectorAll('.booking-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.booking-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        selectedType = chip.dataset.type;
+        // Pre-fill subject
+        document.getElementById('cf-subject').value = selectedType;
+      });
+    });
+
+    // Form submit to Firebase
+    document.getElementById('contact-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Enforce sign-in for table reservations
+      if (selectedType === 'Table Reservation' && !auth.currentUser) {
+        alert("Please sign in or create an account to make a table reservation.");
+        window.location.href = "login.html?return=contact.html";
+        return;
+      }
+      
+      const name = document.getElementById('cf-name').value.trim();
+      const email = document.getElementById('cf-email').value.trim();
+      const phone = document.getElementById('cf-phone').value.trim();
+      const guests = document.getElementById('cf-guests').value;
+      const date = document.getElementById('cf-date').value;
+      const time = document.getElementById('cf-time').value;
+      const subject = document.getElementById('cf-subject').value.trim();
+      const message = document.getElementById('cf-message').value.trim();
+      
+      if (!name || !email || !subject || !message) {
+        alert('Please fill in all required fields (*).');
+        return;
+      }
+      
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span> Sending…';
+      
+      try {
+        await addDoc(collection(db, "reservations"), {
+          userId: auth.currentUser ? auth.currentUser.uid : null,
+          name, email, phone, guests, date, time, subject, message,
+          type: selectedType,
+          status: "pending",
+          tableNumber: null,
+          adminNotes: "",
+          createdAt: serverTimestamp()
+        });
+        
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined">send</span> Send Message';
+        this.reset();
+        document.querySelectorAll('.booking-chip').forEach((c,i) => c.classList.toggle('active', i===0));
+        selectedType = 'General Inquiry';
+        showToast();
+      } catch (error) {
+        console.error("Error saving reservation: ", error);
+        alert("Failed to send message. Please try again.");
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined">send</span> Send Message';
+      }
+    });
+
+    function showToast() {
+      const t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 4000);
+    }
+
+    // FAQ accordion
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const answer = btn.nextElementSibling;
+        const isOpen = btn.classList.contains('open');
+        // Close all
+        document.querySelectorAll('.faq-question').forEach(b => {
+          b.classList.remove('open');
+          b.nextElementSibling.style.maxHeight = null;
+          b.setAttribute('aria-expanded', 'false');
+        });
+        if (!isOpen) {
+          btn.classList.add('open');
+          answer.style.maxHeight = answer.scrollHeight + 'px';
+          btn.setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); }});
+    }, { threshold: 0.08 });
+    reveals.forEach(el => obs.observe(el));
+
+    // Fetch Live Availability
+    async function fetchAvailability() {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const q = query(
+          collection(db, "reservations"), 
+          where("date", "==", today)
+        );
+        const querySnapshot = await getDocs(q);
+        
+        // Filter by status client-side to avoid needing a composite index
+        let reservedCount = querySnapshot.docs.filter(d => d.data().status === 'confirmed').length;
+        let availableCount = TOTAL_TABLES - reservedCount;
+        if (availableCount < 0) availableCount = 0;
+        
+        document.getElementById('avail-count').textContent = `${availableCount} / ${TOTAL_TABLES}`;
+        
+        const pct = (availableCount / TOTAL_TABLES) * 100;
+        const bar = document.getElementById('avail-bar');
+        bar.style.width = pct + '%';
+        
+        if (availableCount === 0) {
+          bar.style.background = 'var(--error)';
+          document.getElementById('avail-count').style.color = 'var(--error)';
+        } else if (availableCount <= 5) {
+          bar.style.background = '#f57f17';
+          document.getElementById('avail-count').style.color = '#f57f17';
+        } else {
+          bar.style.background = 'var(--primary)';
+          document.getElementById('avail-count').style.color = 'var(--primary)';
+        }
+      } catch(e) {
+        console.error("Error fetching availability:", e);
+        document.getElementById('avail-count').textContent = "Unavailable";
+      }
+    }
+    
+    fetchAvailability();
+  </script>
+</body>
+</html>

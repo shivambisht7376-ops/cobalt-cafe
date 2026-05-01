@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal | Cobalt Caffe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    body { background: var(--surface-container-low); margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    
+    /* Admin Header */
+    .admin-header {
+      background: var(--surface-container-lowest);
+      border-bottom: 1px solid var(--surface-container-high);
+      padding: 0 var(--space-md);
+      height: 70px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-shrink: 0;
+    }
+    .admin-brand { display: flex; align-items: center; gap: 10px; }
+    .admin-logo { font-family: var(--font-heading); font-weight: 700; color: var(--primary); font-size: 1.3rem; }
+    .admin-badge { background: var(--secondary); color: #fff; padding: 2px 8px; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .admin-user { display: flex; align-items: center; gap: 15px; }
+    .btn-logout { background: none; border: none; color: var(--on-surface-variant); cursor: pointer; font-family: var(--font-body); font-weight: 600; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
+    .btn-logout:hover { color: var(--error); }
+
+    /* Main Layout */
+    .admin-main { display: flex; flex: 1; overflow: hidden; }
+    
+    /* Left Sidebar: Tables (Floor Plan) */
+    .admin-floorplan {
+      width: 35%; min-width: 350px; max-width: 500px;
+      background: var(--surface-container-lowest);
+      border-right: 1px solid var(--surface-container-high);
+      display: flex; flex-direction: column;
+    }
+    .panel-header {
+      padding: var(--space-md); border-bottom: 1px solid var(--surface-container-high);
+      display: flex; justify-content: space-between; align-items: center; background: var(--surface-bright);
+    }
+    .panel-header h2 { font-size: 1.2rem; margin: 0; display: flex; align-items: center; gap: 8px; }
+    
+    .floorplan-stats { display: flex; gap: 10px; padding: 15px var(--space-md); background: var(--surface-container); border-bottom: 1px solid var(--surface-container-high); }
+    .stat-pill { flex: 1; text-align: center; background: var(--surface-container-lowest); padding: 8px; border-radius: var(--radius-md); border: 1px solid var(--surface-container-high); }
+    .stat-val { font-weight: 700; font-size: 1.2rem; color: var(--primary); }
+    .stat-lbl { font-size: 0.75rem; color: var(--on-surface-variant); text-transform: uppercase; }
+    
+    .tables-grid {
+      padding: var(--space-md); overflow-y: auto; flex: 1;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px;
+    }
+    .table-card {
+      background: var(--surface-container-lowest); border: 2px solid var(--surface-container-high);
+      border-radius: var(--radius-lg); padding: 15px 10px; text-align: center;
+      cursor: pointer; transition: all 0.2s; position: relative;
+    }
+    .table-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+    .table-card.selected { border-color: var(--primary); background: var(--surface-container-low); }
+    .table-num { font-size: 1.4rem; font-weight: 700; font-family: var(--font-heading); margin-bottom: 5px; }
+    .table-cap { font-size: 0.75rem; color: var(--on-surface-variant); display: flex; align-items: center; justify-content: center; gap: 3px; }
+    
+    /* Table Status Colors */
+    .table-card.status-available { border-color: var(--secondary); background: #f1f8e9; }
+    .table-card.status-available .table-num { color: var(--secondary); }
+    .table-card.status-available .table-cap { color: var(--secondary); opacity: 0.8; }
+    
+    .table-card.status-reserved { border-color: #fbbc04; background: #fff8e1; border-style: dashed; }
+    .table-card.status-reserved .table-num { color: #f57f17; }
+    .table-card.status-reserved .table-cap { color: #f57f17; opacity: 0.8; }
+    
+    .table-card.status-occupied { border-color: var(--primary); background: #efebe9; }
+    .table-card.status-occupied .table-num { color: var(--primary); }
+    .table-card.status-occupied .table-cap { color: var(--primary); opacity: 0.8; }
+
+    /* Right Sidebar: Reservations List */
+    .admin-reservations { flex: 1; display: flex; flex-direction: column; background: var(--surface-container-lowest); }
+    
+    .filter-tabs { display: flex; gap: 10px; padding: 15px var(--space-md); background: var(--surface-container-low); border-bottom: 1px solid var(--surface-container-high); }
+    .f-tab { padding: 6px 15px; border-radius: var(--radius-full); border: 1px solid var(--surface-container-high); background: var(--surface-container-lowest); cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--on-surface-variant); }
+    .f-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    
+    .reservations-list { flex: 1; overflow-y: auto; padding: var(--space-md); display: flex; flex-direction: column; gap: 15px; }
+    .res-card {
+      background: #fff; border: 1px solid var(--surface-container-high); border-radius: var(--radius-md);
+      padding: 15px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .res-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .res-name { font-weight: 700; font-size: 1.1rem; color: var(--primary); margin-bottom: 3px; }
+    .res-contact { font-size: 0.85rem; color: var(--on-surface-variant); display: flex; gap: 15px; }
+    
+    .res-badge { padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .res-badge.pending { background: #fff8e1; color: #f57f17; }
+    .res-badge.confirmed { background: var(--secondary-container); color: var(--on-secondary-container); }
+    .res-badge.cancelled { background: var(--error-container); color: var(--on-error-container); }
+
+    .res-details { display: flex; gap: 20px; padding: 10px 0; border-top: 1px dashed var(--surface-container-high); border-bottom: 1px dashed var(--surface-container-high); margin: 5px 0; }
+    .res-detail-item { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; color: var(--on-surface); }
+    .res-detail-item .material-symbols-outlined { color: var(--primary); font-size: 1.1rem; }
+    
+    .res-message { font-size: 0.85rem; color: var(--on-surface-variant); font-style: italic; background: var(--surface-container-low); padding: 8px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--surface-container-high); }
+    
+    .res-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 5px; }
+    .res-btn { padding: 6px 15px; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; display: flex; align-items: center; gap: 5px; }
+    .res-btn-confirm { background: var(--secondary); color: #fff; }
+    .res-btn-cancel { background: var(--surface-container-lowest); color: var(--error); border-color: var(--surface-container-high); }
+    .res-btn-cancel:hover { background: var(--error-container); border-color: var(--error-container); }
+    
+    /* Modal for Assigning Table */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { background: #fff; border-radius: var(--radius-lg); padding: var(--space-md); width: 400px; max-width: 90vw; box-shadow: var(--shadow-lg); }
+    .modal-header { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .close-modal { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--on-surface-variant); }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--primary); margin-bottom: 5px; }
+    .form-group select, .form-group input { width: 100%; padding: 10px; border: 1px solid var(--surface-container-high); border-radius: var(--radius-md); font-family: inherit; }
+    
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--on-surface-variant); padding: 40px; text-align: center; }
+    .empty-state .material-symbols-outlined { font-size: 3rem; color: var(--surface-container-high); margin-bottom: 15px; }
+    
+    /* Loading overlay */
+    .loading-overlay { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .spinner { width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--surface-container-high); border-top-color: var(--primary); animation: spin 0.8s linear infinite; margin-bottom: 15px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* Admin Tabs */
+    .admin-nav-tabs { display: flex; gap: 20px; height: 100%; align-items: center; margin-left: 40px; }
+    .admin-tab-btn { 
+      background: none; border: none; height: 100%; padding: 0 15px; 
+      font-family: inherit; font-weight: 600; color: var(--on-surface-variant); 
+      cursor: pointer; display: flex; align-items: center; gap: 8px; position: relative;
+    }
+    .admin-tab-btn.active { color: var(--primary); }
+    .admin-tab-btn.active::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--primary); }
+
+    /* Management Sections */
+    .admin-section { display: none; width: 100%; height: 100%; overflow: hidden; }
+    .admin-section.active { display: flex; }
+    
+    .manage-container { flex: 1; overflow-y: auto; padding: var(--space-lg); background: var(--surface-container-low); }
+    .manage-card { background: #fff; border-radius: var(--radius-lg); padding: var(--space-md); border: 1px solid var(--surface-container-high); margin-bottom: var(--space-md); }
+    .manage-table { width: 100%; border-collapse: collapse; }
+    .manage-table th { text-align: left; padding: 12px; border-bottom: 2px solid var(--surface-container-high); color: var(--primary); font-size: 0.9rem; }
+    .manage-table td { padding: 12px; border-bottom: 1px solid var(--surface-container-high); vertical-align: middle; }
+    
+    .item-thumb { width: 50px; height: 50px; border-radius: var(--radius-sm); object-fit: cover; background: var(--surface-container); }
+    .action-btns { display: flex; gap: 10px; }
+    .btn-icon { background: none; border: none; cursor: pointer; color: var(--on-surface-variant); transition: color 0.2s; }
+    .btn-icon:hover { color: var(--primary); }
+    .btn-icon.delete:hover { color: var(--error); }
+
+    .gallery-manage-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+    .gallery-manage-item { position: relative; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--surface-container-high); background: #fff; }
+    .gallery-manage-img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+    .gallery-manage-info { padding: 10px; font-size: 0.8rem; }
+    .gallery-manage-actions { position: absolute; top: 5px; right: 5px; display: flex; gap: 5px; }
+    .btn-mini { background: rgba(255,255,255,0.9); border: none; border-radius: 4px; padding: 4px; cursor: pointer; display: flex; box-shadow: var(--shadow-sm); }
+    
+    .migration-banner { background: var(--secondary-container); color: var(--on-secondary-container); padding: 15px; border-radius: var(--radius-md); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Action Buttons */
+    .btn-action {
+      padding: 8px 16px; border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; gap: 6px; border: 1.5px solid transparent;
+      transition: all 0.2s;
+    }
+    .btn-action-danger { background: #fff1f0; color: #cf222e; border-color: #f1d0ce; }
+    .btn-action-danger:hover { background: #cf222e; color: #fff; }
+    
+    .btn-action-success { background: #22c55e; color: #fff; border-color: #16a34a; }
+    .btn-action-success:hover { background: #16a34a; transform: translateY(-1px); }
+    
+    .btn-action-primary { background: var(--primary); color: #fff; }
+    .btn-action-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+
+  <!-- Initial Loading -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="spinner"></div>
+    <div style="font-weight: 600; color: var(--primary);">Authenticating Admin...</div>
+  </div>
+
+  <header class="admin-header">
+    <div class="admin-brand">
+      <div class="admin-logo">Cobalt Caffe</div>
+      <div class="admin-badge">Admin Portal</div>
+    </div>
+    <div class="admin-nav-tabs">
+      <button class="admin-tab-btn active" data-target="section-reservations">
+        <span class="material-symbols-outlined">book_online</span> Reservations
+      </button>
+      <button class="admin-tab-btn" data-target="section-menu">
+        <span class="material-symbols-outlined">restaurant_menu</span> Manage Menu
+      </button>
+      <button class="admin-tab-btn" data-target="section-gallery">
+        <span class="material-symbols-outlined">gallery_thumbnail</span> Manage Gallery
+      </button>
+      <button class="admin-tab-btn" data-target="section-history">
+        <span class="material-symbols-outlined">history</span> History
+      </button>
+    </div>
+    <div class="admin-user">
+      <span id="admin-email-display" style="font-size: 0.9rem; font-weight: 600;"></span>
+      <button class="btn-logout" id="btn-logout"><span class="material-symbols-outlined">logout</span> Sign Out</button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <!-- SECTION: Reservations & Dashboard -->
+    <section id="section-reservations" class="admin-section active">
+      <!-- Left: Floor Plan -->
+      <aside class="admin-floorplan">
+        <div class="panel-header" style="justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <h2><span class="material-symbols-outlined">grid_view</span> Floor Plan</h2>
+            <input type="date" id="floor-plan-date" class="admin-input" style="padding: 4px 8px; font-size: 0.85rem; width: auto; height: auto; margin-left: 10px;">
+          </div>
+          <span style="font-size: 0.85rem; color: var(--on-surface-variant);">15 Total Tables</span>
+        </div>
+        
+        <div class="floorplan-stats">
+          <div class="stat-pill">
+            <div class="stat-val" id="stat-avail">15</div>
+            <div class="stat-lbl">Available</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-val" id="stat-res" style="color: #f57f17;">0</div>
+            <div class="stat-lbl">Reserved</div>
+          </div>
+          <div class="stat-pill">
+            <div class="stat-val" id="stat-occ" style="color: var(--error);">0</div>
+            <div class="stat-lbl">Occupied</div>
+          </div>
+        </div>
+        
+        <div class="tables-grid" id="tables-container">
+          <!-- Tables generated by JS -->
+        </div>
+      </aside>
+
+      <!-- Right: Reservations List -->
+      <section class="admin-reservations">
+        <div class="panel-header">
+          <h2><span class="material-symbols-outlined">book_online</span> Reservations</h2>
+          <div style="display: flex; gap: 10px;">
+            <button class="res-btn res-btn-confirm" id="btn-add-res">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">add</span> Add New
+            </button>
+            <button class="res-btn res-btn-confirm" id="btn-refresh" style="background: var(--surface-container-highest); color: var(--primary);">
+              <span class="material-symbols-outlined" style="font-size: 1rem;">refresh</span> Refresh
+            </button>
+          </div>
+        </div>
+        
+        <div class="filter-tabs">
+          <button class="f-tab active" data-filter="all">All</button>
+          <button class="f-tab" data-filter="pending">Pending</button>
+          <button class="f-tab" data-filter="confirmed">Confirmed</button>
+          <button class="f-tab" data-filter="cancelled">Cancelled</button>
+        </div>
+        
+        <div class="reservations-list" id="reservations-container">
+          <div class="empty-state" id="res-loading">
+            <div class="spinner" style="margin-bottom: 0;"></div>
+            <p style="margin-top: 15px;">Loading reservations...</p>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- SECTION: Menu Management -->
+    <section id="section-menu" class="admin-section">
+      <div class="manage-container">
+        <div class="panel-header" style="margin-bottom: 20px; border-radius: var(--radius-lg);">
+          <h2><span class="material-symbols-outlined">restaurant_menu</span> Menu Items</h2>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-action btn-action-danger" id="btn-clear-menu">
+              <span class="material-symbols-outlined" style="font-size: 1.1rem;">delete_sweep</span> Clear All
+            </button>
+            <button class="btn-action btn-action-success" id="btn-header-seed-menu">
+              <span class="material-symbols-outlined" style="font-size: 1.1rem;">storage</span> Seed Data
+            </button>
+            <button class="btn-action btn-action-primary" id="btn-add-menu-item">
+              <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span> Add Item
+            </button>
+          </div>
+        </div>
+
+        <div id="migration-banner-menu" class="migration-banner" style="display: none;">
+          <div>
+            <strong>Seed Database?</strong> Your menu is currently empty. Would you like to populate it with the default items?
+          </div>
+          <button class="res-btn res-btn-confirm" id="btn-seed-menu" style="background: var(--secondary); border: none;">Populate Menu</button>
+        </div>
+
+        <div class="manage-card">
+          <table class="manage-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Tag</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="menu-items-table">
+              <!-- Items populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: Gallery Management -->
+    <section id="section-gallery" class="admin-section">
+      <div class="manage-container">
+        <div class="panel-header" style="margin-bottom: 20px; border-radius: var(--radius-lg);">
+          <h2><span class="material-symbols-outlined">gallery_thumbnail</span> Gallery Photos</h2>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn-action btn-action-danger" id="btn-clear-gallery">
+              <span class="material-symbols-outlined" style="font-size: 1.1rem;">delete_sweep</span> Clear All
+            </button>
+            <button class="btn-action btn-action-success" id="btn-header-seed-gallery">
+              <span class="material-symbols-outlined" style="font-size: 1.1rem;">storage</span> Seed Data
+            </button>
+            <button class="btn-action btn-action-primary" id="btn-add-gallery-item">
+              <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span> Add Photo
+            </button>
+          </div>
+        </div>
+
+        <div id="migration-banner-gallery" class="migration-banner" style="display: none;">
+          <div>
+            <strong>Seed Gallery?</strong> Your gallery is currently empty. Would you like to populate it with the default photos?
+          </div>
+          <button class="res-btn res-btn-confirm" id="btn-seed-gallery" style="background: var(--secondary); border: none;">Populate Gallery</button>
+        </div>
+
+        <div class="gallery-manage-grid" id="gallery-items-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </section>
+    <!-- SECTION: History -->
+    <section id="section-history" class="admin-section">
+      <div class="manage-container">
+        <div class="panel-header" style="margin-bottom: 20px;">
+          <h2><span class="material-symbols-outlined">history</span> Reservation History</h2>
+          <span style="font-size: 0.85rem; color: var(--on-surface-variant);">All Confirmed & Rejected Requests</span>
+        </div>
+        
+        <div class="manage-card">
+          <table class="manage-table">
+            <thead>
+              <tr>
+                <th>Guest</th>
+                <th>Date & Time</th>
+                <th>Pax</th>
+                <th>Status</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="history-list">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="confirm-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        Assign Table
+        <button class="close-modal" onclick="document.getElementById('confirm-modal').classList.remove('active')">&times;</button>
+      </div>
+      <div style="margin-bottom: 15px; font-size: 0.9rem;">
+        Assigning table for <strong><span id="modal-guest-name"></span></strong> (<span id="modal-guest-count"></span> guests)
+      </div>
+      <div class="form-group">
+        <label>Select Table</label>
+        <select id="modal-table-select"></select>
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+        <button class="res-btn res-btn-cancel" onclick="document.getElementById('confirm-modal').classList.remove('active')">Cancel</button>
+        <button class="res-btn res-btn-confirm" id="btn-confirm-assign">Confirm & Notify</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Reservation -->
+  <div class="modal-overlay" id="add-res-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        Add New Reservation
+        <button class="close-modal" onclick="document.getElementById('add-res-modal').classList.remove('active')">&times;</button>
+      </div>
+      <form id="add-res-form">
+        <div class="form-group">
+          <label>Guest Name *</label>
+          <input type="text" id="add-res-name" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="add-res-email" required>
+          </div>
+          <div class="form-group">
+            <label>Phone *</label>
+            <input type="tel" id="add-res-phone" required>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label>Date *</label>
+            <input type="date" id="add-res-date" required>
+          </div>
+          <div class="form-group">
+            <label>Time Slot *</label>
+            <select id="add-res-time" required>
+              <option value="07:00 – 09:00">07:00 – 09:00</option>
+              <option value="09:00 – 11:00">09:00 – 11:00</option>
+              <option value="11:00 – 13:00">11:00 – 13:00</option>
+              <option value="13:00 – 15:00">13:00 – 15:00</option>
+              <option value="15:00 – 17:00">15:00 – 17:00</option>
+              <option value="17:00 – 19:00">17:00 – 19:00</option>
+              <option value="19:00 – 21:00">19:00 – 21:00</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Guests (Pax) *</label>
+          <input type="number" id="add-res-pax" min="1" max="20" required>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" class="res-btn res-btn-cancel" onclick="document.getElementById('add-res-modal').classList.remove('active')">Cancel</button>
+          <button type="submit" class="res-btn res-btn-confirm">Create Reservation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Reservation -->
+  <div class="modal-overlay" id="edit-res-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        Edit Reservation
+        <button class="close-modal" onclick="document.getElementById('edit-res-modal').classList.remove('active')">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="edit-res-status">
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="rejected">Rejected</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Assigned Table</label>
+        <select id="edit-res-table"></select>
+      </div>
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+        <button class="res-btn res-btn-cancel" onclick="document.getElementById('edit-res-modal').classList.remove('active')">Cancel</button>
+        <button class="res-btn res-btn-confirm" id="btn-save-edit-res">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add/Edit Menu Item -->
+  <div class="modal-overlay" id="menu-item-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="menu-modal-title">Add Menu Item</span>
+        <button class="close-modal" id="close-menu-modal">&times;</button>
+      </div>
+      <form id="menu-item-form">
+        <input type="hidden" id="menu-item-id">
+        <div class="form-group">
+          <label>Item Name *</label>
+          <input type="text" id="menu-name" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="form-group">
+            <label>Category *</label>
+            <select id="menu-category" required>
+              <option value="coffee">Coffee (Hot)</option>
+              <option value="cold-drinks">Cold Coffee & Drinks</option>
+              <option value="mocktails">Mocktails & Refreshers</option>
+              <option value="tea">Heritage Tea</option>
+              <option value="food">Artisan Food</option>
+              <option value="desserts">Desserts</option>
+              <option value="ice-cream">Ice Cream & Gelato</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Price (₹) *</label>
+            <input type="number" id="menu-price" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Tag (e.g. Bestseller, New, Veg)</label>
+          <input type="text" id="menu-tag" placeholder="Optional">
+        </div>
+        <div class="form-group">
+          <label>Description *</label>
+          <input type="text" id="menu-desc" required>
+        </div>
+        <div class="form-group">
+          <label>Item Image *</label>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="file" id="menu-image-file" accept="image/*" style="flex: 1;">
+            <span>OR</span>
+            <input type="url" id="menu-image-url" placeholder="Image URL" style="flex: 1;">
+          </div>
+          <div id="menu-upload-progress" style="display: none; height: 4px; background: var(--surface-container-high); margin-top: 5px; border-radius: 2px; overflow: hidden;">
+            <div id="menu-progress-bar" style="height: 100%; width: 0%; background: var(--secondary); transition: width 0.3s;"></div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" class="res-btn res-btn-cancel" id="btn-menu-cancel">Cancel</button>
+          <button type="submit" class="res-btn res-btn-confirm" id="btn-menu-save">Save Item</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Gallery Photo -->
+  <div class="modal-overlay" id="gallery-item-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        Add Gallery Photo
+        <button class="close-modal" id="close-gallery-modal">&times;</button>
+      </div>
+      <form id="gallery-item-form">
+        <div class="form-group">
+          <label>Category *</label>
+          <select id="gallery-category" required>
+            <option value="drinks">Drinks</option>
+            <option value="space">The Space</option>
+            <option value="food">Food</option>
+            <option value="events">Events</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Caption *</label>
+          <input type="text" id="gallery-caption" required>
+        </div>
+        <div class="form-group">
+          <label>Image File *</label>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="file" id="gallery-image-file" accept="image/*" style="flex: 1;">
+            <span>OR</span>
+            <input type="url" id="gallery-image-url" placeholder="Image URL" style="flex: 1;">
+          </div>
+          <div id="gallery-upload-progress" style="display: none; height: 4px; background: var(--surface-container-high); margin-top: 5px; border-radius: 2px; overflow: hidden;">
+            <div id="gallery-progress-bar" style="height: 100%; width: 0%; background: var(--secondary); transition: width 0.3s;"></div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" class="res-btn res-btn-cancel" id="btn-gallery-cancel">Cancel</button>
+          <button type="submit" class="res-btn res-btn-confirm" id="btn-gallery-save">Add Photo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { collection, query, orderBy, onSnapshot, doc, updateDoc, getDocs, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+    import { auth, db, storage, ADMIN_EMAIL, TOTAL_TABLES } from "./firebase-config.js";
+
+    let allReservations = [];
+    let currentFilter = 'all';
+    let currentConfirmId = null;
+
+    // Check Auth
+    onAuthStateChanged(auth, user => {
+      const overlay = document.getElementById('loading-overlay');
+      if (!user || user.email !== ADMIN_EMAIL) {
+        window.location.href = "login.html?return=admin.html";
+        return;
+      }
+      const emailDisplay = document.getElementById('admin-email-display');
+      if (emailDisplay) emailDisplay.textContent = user.email;
+      if (overlay) overlay.style.display = 'none';
+      initAdmin();
+    });
+
+    // Safety fallback
+    setTimeout(() => {
+      const overlay = document.getElementById('loading-overlay');
+      if (overlay && overlay.style.display !== 'none') {
+        console.warn("Auth took too long, forcing hide...");
+        overlay.style.display = 'none';
+      }
+    }, 5000);
+
+    const logoutBtn = document.getElementById('btn-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        signOut(auth).then(() => window.location.href = "index.html");
+      });
+    }
+
+    function initAdmin() {
+      renderTables();
+      loadReservations();
+      initTabs();
+      initFilters();
+      initDatePicker();
+      loadMenu();
+      loadGallery();
+    }
+
+    // --- Tab Navigation ---
+    function initTabs() {
+      document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+          btn.classList.add('active');
+          const target = document.getElementById(btn.dataset.target);
+          if (target) target.classList.add('active');
+        });
+      });
+    }
+
+    // --- Filter Navigation ---
+    function initFilters() {
+      document.querySelectorAll('.f-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.f-tab').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.dataset.filter;
+          renderReservations();
+        });
+      });
+    }
+
+    // Initialize Date Picker
+    function initDatePicker() {
+      const floorDateInput = document.getElementById('floor-plan-date');
+      if (floorDateInput) {
+        floorDateInput.value = new Date().toISOString().split('T')[0];
+        floorDateInput.addEventListener('change', () => updateTableStatusesFromReservations());
+      }
+    }
+
+    // --- Tables Management ---
+    const tables = Array.from({length: TOTAL_TABLES}, (_, i) => ({
+      id: i + 1,
+      capacity: (i+1 <= 4) ? 2 : (i+1 <= 13) ? 4 : 8,
+      status: 'available', 
+      resId: null
+    }));
+
+    function renderTables() {
+      const container = document.getElementById('tables-container');
+      if(!container) return;
+      container.innerHTML = '';
+      
+      let avail = 0, res = 0, occ = 0;
+      tables.forEach(t => {
+        if(t.status === 'available') avail++;
+        if(t.status === 'reserved') res++;
+        if(t.status === 'occupied') occ++;
+
+        const card = document.createElement('div');
+        card.className = `table-card status-${t.status}`;
+        card.innerHTML = `
+          <div class="table-num">T${t.id}</div>
+          <div class="table-cap"><span class="material-symbols-outlined" style="font-size:12px;">person</span> ${t.capacity} pax</div>
+          <div style="font-size:0.7rem; margin-top:5px; font-weight:600; text-transform:uppercase;">${t.status}</div>
+        `;
+        card.addEventListener('click', () => {
+          if (t.status === 'available') t.status = 'occupied';
+          else if (t.status === 'occupied') t.status = 'available';
+          renderTables();
+        });
+        container.appendChild(card);
+      });
+      
+      const sAvail = document.getElementById('stat-avail');
+      const sRes = document.getElementById('stat-res');
+      const sOcc = document.getElementById('stat-occ');
+      if (sAvail) sAvail.textContent = avail;
+      if (sRes) sRes.textContent = res;
+      if (sOcc) sOcc.textContent = occ;
+    }
+
+    // --- Reservations Management ---
+    function loadReservations() {
+      const q = query(collection(db, "reservations"), orderBy("createdAt", "desc"));
+      onSnapshot(q, (snapshot) => {
+        allReservations = [];
+        snapshot.forEach((doc) => {
+          allReservations.push({ id: doc.id, ...doc.data() });
+        });
+        updateTableStatusesFromReservations();
+        renderReservations();
+      });
+    }
+
+    function updateTableStatusesFromReservations() {
+      tables.forEach(t => { if(t.status === 'reserved') t.status = 'available'; });
+      
+      const selectedDate = document.getElementById('floor-plan-date')?.value || new Date().toISOString().split('T')[0];
+      
+      allReservations.forEach(r => {
+        if (r.status === 'confirmed' && r.tableId && r.date === selectedDate) {
+          const t = tables.find(t => t.id == r.tableId);
+          if (t && t.status !== 'occupied') t.status = 'reserved';
+        }
+      });
+      renderTables();
+    }
+
+    function renderReservations() {
+      const container = document.getElementById('reservations-container');
+      const historyList = document.getElementById('history-list');
+      if(!container || !historyList) return;
+      
+      container.innerHTML = '';
+      historyList.innerHTML = '';
+      
+      const filtered = allReservations.filter(r => currentFilter === 'all' || r.status === currentFilter);
+      
+      // Populate active reservations
+      const pending = filtered.filter(r => r.status === 'pending' || r.status === 'confirmed');
+      if (pending.length === 0) {
+        container.innerHTML = `<div class="empty-state"><h3>No active reservations</h3></div>`;
+      } else {
+        pending.forEach(res => {
+          const d = new Date(res.date);
+          const dateStr = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+          const card = document.createElement('div');
+          card.className = 'res-card';
+          let actionsHtml = '';
+          if (res.status === 'pending') {
+            actionsHtml = `
+              <div class="res-actions">
+                <button class="res-btn res-btn-cancel" onclick="updateResStatus('${res.id}', 'rejected')">Decline</button>
+                <button class="res-btn res-btn-confirm" onclick="openConfirmModal('${res.id}', '${res.name}', '${res.guests}')">Accept & Assign</button>
+                <button class="btn-mini" onclick="openEditResModal('${res.id}')" title="Edit"><span class="material-symbols-outlined">edit</span></button>
+              </div>
+            `;
+          } else if (res.status === 'confirmed') {
+            actionsHtml = `
+              <div class="res-actions">
+                <button class="res-btn res-btn-cancel" onclick="updateResStatus('${res.id}', 'cancelled')">Cancel</button>
+                <button class="btn-mini" onclick="openEditResModal('${res.id}')" title="Edit"><span class="material-symbols-outlined">edit</span></button>
+              </div>
+            `;
+          }
+          card.innerHTML = `
+            <div class="res-header">
+              <div><div class="res-name">${res.name}</div><div class="res-contact"><span>${res.phone} | ${res.email}</span></div></div>
+              <span class="res-badge ${res.status}">${res.status}</span>
+            </div>
+            <div class="res-details">
+              <div class="res-detail-item"><span class="material-symbols-outlined">calendar_month</span> ${dateStr}</div>
+              <div class="res-detail-item"><span class="material-symbols-outlined">schedule</span> ${res.time}</div>
+              <div class="res-detail-item"><span class="material-symbols-outlined">group</span> ${res.guests} pax ${res.tableId ? ' | T'+res.tableId : ''}</div>
+            </div>
+            ${actionsHtml}
+          `;
+          container.appendChild(card);
+        });
+      }
+
+      // Populate history (rejected/cancelled/completed)
+      const historyItems = allReservations.filter(r => ['rejected', 'cancelled', 'completed'].includes(r.status));
+      historyItems.forEach(res => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${res.name}</strong><br><small>${res.email}</small></td>
+          <td>${res.date} @ ${res.time}</td>
+          <td>${res.guests} pax</td>
+          <td><span class="tag" style="background: ${res.status === 'rejected' ? 'var(--error-container)' : 'var(--surface-container-high)'}">${res.status}</span></td>
+          <td style="text-align: right;">
+            <button class="btn-mini" onclick="openEditResModal('${res.id}')"><span class="material-symbols-outlined" style="font-size: 1.1rem;">edit</span></button>
+            <button class="btn-mini" onclick="deleteRes('${res.id}')"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: var(--error);">delete</span></button>
+          </td>
+        `;
+        historyList.appendChild(tr);
+      });
+    }
+
+    window.deleteRes = async (id) => { if(confirm('Delete record?')) await deleteDoc(doc(db, "reservations", id)); };
+
+    // Helper: Upload Image
+    async function uploadImage(file, folder, progressBarId, progressContainerId) {
+      if (!file) return null;
+      const progressContainer = document.getElementById(progressContainerId);
+      const progressBar = document.getElementById(progressBarId);
+      
+      if (progressContainer) progressContainer.style.display = 'block';
+      if (progressBar) progressBar.style.width = '0%';
+      
+      return new Promise((resolve, reject) => {
+        const fileRef = ref(storage, `${folder}/${Date.now()}-${file.name}`);
+        const uploadTask = uploadBytesResumable(fileRef, file);
+
+        uploadTask.on('state_changed', 
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            if (progressBar) progressBar.style.width = progress + '%';
+            console.log('Upload is ' + progress + '% done');
+          }, 
+          (error) => {
+            console.error("Upload failed:", error);
+            alert(`Image Upload Failed: ${error.message}\n\nPlease check if your Firebase Storage Rules allow writes.`);
+            if (progressContainer) progressContainer.style.display = 'none';
+            resolve(null);
+          }, 
+          () => {
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+              console.log('File available at', downloadURL);
+              if (progressContainer) progressContainer.style.display = 'none';
+              resolve(downloadURL);
+            });
+          }
+        );
+
+        // Safety timeout
+        setTimeout(() => {
+          if (uploadTask.snapshot.state !== 'success') {
+            uploadTask.cancel();
+            reject(new Error("Upload timed out after 30 seconds. CORS or Network issue."));
+          }
+        }, 30000);
+      }).catch(err => {
+        alert(err.message);
+        if (progressContainer) progressContainer.style.display = 'none';
+        return null;
+      });
+    }
+
+    // --- Menu Management ---
+    function loadMenu() {
+      onSnapshot(collection(db, "menu"), (snapshot) => {
+        const table = document.getElementById('menu-items-table');
+        const banner = document.getElementById('migration-banner-menu');
+        if (!table) return;
+        table.innerHTML = '';
+        if (snapshot.empty) { if(banner) banner.style.display = 'flex'; return; }
+        if (banner) banner.style.display = 'none';
+        snapshot.forEach(docSnap => {
+          const item = { id: docSnap.id, ...docSnap.data() };
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><img src="${item.image || 'espresso.png'}" class="item-thumb"></td>
+            <td><strong>${item.name}</strong><br><small>${item.description.substring(0, 40)}...</small></td>
+            <td><span class="tag">${item.category}</span></td>
+            <td>₹${item.price}</td>
+            <td>${item.tag || '-'}</td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-icon" onclick="editMenuItem('${item.id}')"><span class="material-symbols-outlined">edit</span></button>
+                <button class="btn-icon delete" onclick="deleteMenuItem('${item.id}')"><span class="material-symbols-outlined">delete</span></button>
+              </div>
+            </td>
+          `;
+          table.appendChild(tr);
+        });
+      });
+    }
+
+    window.deleteMenuItem = async (id) => { if(confirm('Delete this item?')) await deleteDoc(doc(db, "menu", id)); };
+    window.editMenuItem = async (id) => {
+      const snap = await getDocs(query(collection(db, "menu")));
+      const item = snap.docs.find(d => d.id === id).data();
+      document.getElementById('menu-item-id').value = id;
+      document.getElementById('menu-name').value = item.name;
+      document.getElementById('menu-category').value = item.category;
+      document.getElementById('menu-price').value = item.price;
+      document.getElementById('menu-tag').value = item.tag || '';
+      document.getElementById('menu-desc').value = item.description;
+      document.getElementById('menu-image-url').value = item.image || '';
+      document.getElementById('menu-image-file').value = '';
+      document.getElementById('menu-modal-title').textContent = "Edit Menu Item";
+      document.getElementById('menu-item-modal').classList.add('active');
+    };
+
+    const addMenuBtn = document.getElementById('btn-add-menu-item');
+    if (addMenuBtn) {
+      addMenuBtn.addEventListener('click', () => {
+        document.getElementById('menu-item-form').reset();
+        document.getElementById('menu-item-id').value = '';
+        document.getElementById('menu-modal-title').textContent = "Add Menu Item";
+        document.getElementById('menu-item-modal').classList.add('active');
+      });
+    }
+
+    const menuForm = document.getElementById('menu-item-form');
+    if (menuForm) {
+      menuForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-menu-save');
+        if (btn) { btn.disabled = true; btn.textContent = "Saving..."; }
+        
+        const id = document.getElementById('menu-item-id').value;
+        const file = document.getElementById('menu-image-file').files[0];
+        let imageUrl = document.getElementById('menu-image-url').value.trim();
+        
+        if (file) {
+          const uploadedUrl = await uploadImage(file, 'menu', 'menu-progress-bar', 'menu-upload-progress');
+          if (uploadedUrl) imageUrl = uploadedUrl;
+        }
+
+        const data = {
+          name: document.getElementById('menu-name').value,
+          category: document.getElementById('menu-category').value,
+          price: parseInt(document.getElementById('menu-price').value),
+          tag: document.getElementById('menu-tag').value,
+          description: document.getElementById('menu-desc').value,
+          image: imageUrl,
+          updatedAt: serverTimestamp()
+        };
+        
+        try {
+          if (id) await updateDoc(doc(db, "menu", id), data);
+          else await addDoc(collection(db, "menu"), { ...data, createdAt: serverTimestamp() });
+          document.getElementById('menu-item-modal').classList.remove('active');
+        } catch (err) {
+          console.error("Save failed:", err);
+          alert("Failed to save item: " + err.message);
+        } finally {
+          if (btn) { btn.disabled = false; btn.textContent = "Save Item"; }
+        }
+      });
+    }
+
+    // --- Gallery Management ---
+    function loadGallery() {
+      onSnapshot(collection(db, "gallery"), (snapshot) => {
+        const grid = document.getElementById('gallery-items-grid');
+        const banner = document.getElementById('migration-banner-gallery');
+        if (!grid) return;
+        grid.innerHTML = '';
+        if (snapshot.empty) { if(banner) banner.style.display = 'flex'; return; }
+        if (banner) banner.style.display = 'none';
+        snapshot.forEach(docSnap => {
+          const item = { id: docSnap.id, ...docSnap.data() };
+          const div = document.createElement('div');
+          div.className = 'gallery-manage-item';
+          div.innerHTML = `
+            <img src="${item.image}" class="gallery-manage-img">
+            <div class="gallery-manage-actions">
+              <button class="btn-mini" onclick="deleteGalleryItem('${item.id}')"><span class="material-symbols-outlined" style="color:var(--error);font-size:18px;">delete</span></button>
+            </div>
+            <div class="gallery-manage-info">
+              <strong>${item.category}</strong><br>${item.caption}
+            </div>
+          `;
+          grid.appendChild(div);
+        });
+      });
+    }
+
+    window.deleteGalleryItem = async (id) => { if(confirm('Remove photo?')) await deleteDoc(doc(db, "gallery", id)); };
+
+    const addGalleryBtn = document.getElementById('btn-add-gallery-item');
+    if (addGalleryBtn) {
+      addGalleryBtn.addEventListener('click', () => {
+        document.getElementById('gallery-item-form').reset();
+        document.getElementById('gallery-item-modal').classList.add('active');
+      });
+    }
+
+    const galleryForm = document.getElementById('gallery-item-form');
+    if (galleryForm) {
+      galleryForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-gallery-save');
+        if (btn) { btn.disabled = true; btn.textContent = "Uploading..."; }
+
+        const file = document.getElementById('gallery-image-file').files[0];
+        let imageUrl = document.getElementById('gallery-image-url').value.trim();
+
+        if (file) {
+          const uploadedUrl = await uploadImage(file, 'gallery', 'gallery-progress-bar', 'gallery-upload-progress');
+          if (uploadedUrl) imageUrl = uploadedUrl;
+        }
+
+        if (!imageUrl) {
+          alert("Please select a file or provide a URL.");
+          if (btn) { btn.disabled = false; btn.textContent = "Add Photo"; }
+          return;
+        }
+
+        try {
+          await addDoc(collection(db, "gallery"), {
+            category: document.getElementById('gallery-category').value,
+            caption: document.getElementById('gallery-caption').value,
+            image: imageUrl,
+            createdAt: serverTimestamp()
+          });
+          document.getElementById('gallery-item-modal').classList.remove('active');
+        } catch (err) {
+          console.error("Gallery save failed:", err);
+          alert("Failed to add photo: " + err.message);
+        } finally {
+          if (btn) { btn.disabled = false; btn.textContent = "Add Photo"; }
+        }
+      });
+    }
+
+    // --- Seeding Logic ---
+    function setupSeeding(btnId, headerBtnId, collectionName, seedData, label) {
+      const btn = document.getElementById(btnId);
+      const hBtn = document.getElementById(headerBtnId);
+      const seedFn = async () => {
+        const targets = [btn, hBtn].filter(b => b);
+        targets.forEach(b => { b.disabled = true; b.textContent = "Seeding..."; });
+        try {
+          for (const item of seedData) {
+            await addDoc(collection(db, collectionName), { ...item, createdAt: serverTimestamp() });
+          }
+          targets.forEach(b => { b.textContent = "Seeded!"; });
+        } catch (err) {
+          console.error(`${label} seeding failed:`, err);
+          alert(`Seeding Failed: ${err.message}\n\nCommon causes:\n1. Firestore Security Rules are blocking writes.\n2. You are not logged in as the correct admin.\n3. Network connection issues.`);
+          targets.forEach(b => { b.textContent = "Error"; });
+        } finally {
+          setTimeout(() => {
+            if (btn) { btn.disabled = false; btn.textContent = `Populate ${label}`; }
+            if (hBtn) { hBtn.disabled = false; hBtn.textContent = 'Seed Data'; }
+          }, 2000);
+        }
+      };
+      if (btn) btn.addEventListener('click', seedFn);
+      if (hBtn) hBtn.addEventListener('click', seedFn);
+    }
+
+    const MENU_SEED = [
+      // Coffee
+      { category: 'coffee', name: 'Heritage Espresso', description: 'Double shot of our dark roasted house blend with a thick, golden crema.', price: 320, image: 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&q=80&w=800', tag: 'Bestseller' },
+      { category: 'coffee', name: 'Saffron Silk Latte', description: 'A creamy infusion of hand-picked Kashmiri saffron and honey in velvet milk.', price: 450, image: 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&q=80&w=800', tag: 'Signature' },
+      { category: 'coffee', name: 'Rose Petal Cappuccino', description: 'Classic cappuccino with a hint of organic rose syrup and dried petals.', price: 390, image: 'https://images.unsplash.com/photo-1534706936160-d5ee67737049?auto=format&fit=crop&q=80&w=800' },
+      
+      // Cold Drinks
+      { category: 'cold-drinks', name: 'Nitro Cold Brew', description: 'Smooth, nitrogen-infused cold brew with a creamy head.', price: 380, image: 'https://images.unsplash.com/photo-1461023058943-07fcaf1f17e8?auto=format&fit=crop&q=80&w=800', tag: 'New' },
+      { category: 'cold-drinks', name: 'Iced Spanish Latte', description: 'Sweetened condensed milk mixed with espresso and chilled milk.', price: 420, image: 'https://images.unsplash.com/photo-1553909489-cd47e0907980?auto=format&fit=crop&q=80&w=800' },
+      
+      // Mocktails
+      { category: 'mocktails', name: 'Sunset Mojito', description: 'Fresh mint, lime, and blood orange syrup topped with sparkling soda.', price: 340, image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&q=80&w=800', tag: 'Refreshing' },
+      { category: 'mocktails', name: 'Blueberry Lavender Fizz', description: 'House-made blueberry compote with lavender notes and tonic.', price: 360, image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&q=80&w=800' },
+      
+      // Tea
+      { category: 'tea', name: 'Kashmiri Kahwa', description: 'Traditional green tea infused with saffron, cinnamon, and almonds.', price: 350, image: 'https://images.unsplash.com/photo-1544787210-28271d7b600a?auto=format&fit=crop&q=80&w=800', tag: 'Heritage' },
+      
+      // Food
+      { category: 'food', name: 'Avocado Heritage Toast', description: 'Artisan sourdough with smashed avocado, feta, and pomegranate.', price: 520, image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&q=80&w=800', tag: 'Healthy' },
+      { category: 'food', name: 'Paneer Tikka Bruschetta', description: 'Spiced cottage cheese and tangy chutney on toasted bread.', price: 480, image: 'https://images.unsplash.com/photo-1631515233349-296065e19722?auto=format&fit=crop&q=80&w=800' },
+      
+      // Desserts
+      { category: 'desserts', name: 'Pistachio Baklava Cheesecake', description: 'Layered honey-soaked pastry on a rich cheesecake base.', price: 420, image: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&q=80&w=800', tag: 'Must Try' },
+      
+      // Ice Cream
+      { category: 'ice-cream', name: 'Saffron & Pistachio Gelato', description: 'Handcrafted Italian style gelato with premium Iranian saffron.', price: 280, image: 'https://images.unsplash.com/photo-1560008581-09826d1de69e?auto=format&fit=crop&q=80&w=800', tag: 'Signature' },
+      { category: 'ice-cream', name: 'Dark Chocolate Sea Salt', description: 'Intense 70% dark chocolate gelato with hints of sea salt.', price: 260, image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&q=80&w=800' }
+    ];
+
+    const GALLERY_SEED = [
+      { category: 'space', caption: 'The Morning Glow', image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&q=80&w=800' },
+      { category: 'drinks', caption: 'Signature Saffron Latte', image: 'https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&q=80&w=800' },
+      { category: 'food', caption: 'Artisan Pastries', image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&q=80&w=800' },
+      { category: 'space', caption: 'Heritage Corner', image: 'https://images.unsplash.com/photo-1559925393-8be0ec41b5ec?auto=format&fit=crop&q=80&w=800' },
+      { category: 'events', caption: 'Live Music Night', image: 'https://images.unsplash.com/photo-1514525253344-99a4299942ba?auto=format&fit=crop&q=80&w=800' },
+      { category: 'drinks', caption: 'Nitro Cold Brew Pour', image: 'https://images.unsplash.com/photo-1461023058943-07fcaf1f17e8?auto=format&fit=crop&q=80&w=800' },
+      { category: 'space', caption: 'Reading Nook', image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=800' },
+      { category: 'food', caption: 'Breakfast Spread', image: 'https://images.unsplash.com/photo-1493770348161-369560ae357d?auto=format&fit=crop&q=80&w=800' },
+      { category: 'space', caption: 'The Barista Bar', image: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&q=80&w=800' },
+      { category: 'events', caption: 'Latte Art Workshop', image: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&q=80&w=800' }
+    ];
+
+    setupSeeding('btn-seed-menu', 'btn-header-seed-menu', 'menu', MENU_SEED, 'Menu');
+    setupSeeding('btn-seed-gallery', 'btn-header-seed-gallery', 'gallery', GALLERY_SEED, 'Gallery');
+
+    // --- Reset Logic ---
+    const clearMenuBtn = document.getElementById('btn-clear-menu');
+    if (clearMenuBtn) {
+      clearMenuBtn.addEventListener('click', async () => {
+        if (!confirm("Are you sure you want to delete ALL menu items? This cannot be undone.")) return;
+        const snap = await getDocs(collection(db, "menu"));
+        for (const d of snap.docs) await deleteDoc(doc(db, "menu", d.id));
+        alert("Menu cleared.");
+      });
+    }
+
+    const clearGalleryBtn = document.getElementById('btn-clear-gallery');
+    if (clearGalleryBtn) {
+      clearGalleryBtn.addEventListener('click', async () => {
+        if (!confirm("Are you sure you want to delete ALL gallery photos? This cannot be undone.")) return;
+        const snap = await getDocs(collection(db, "gallery"));
+        for (const d of snap.docs) await deleteDoc(doc(db, "gallery", d.id));
+        alert("Gallery cleared.");
+      });
+    }
+
+    // Shared UI Close logic
+    document.querySelectorAll('.close-modal, .res-btn-cancel').forEach(el => {
+      el.addEventListener('click', () => document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active')));
+    });
+
+    // Expose window functions
+    window.updateResStatus = async (id, s) => { await updateDoc(doc(db, "reservations", id), { status: s }); };
+    let currentEditId = null;
+    
+    window.openEditResModal = (id) => {
+      currentEditId = id;
+      const res = allReservations.find(r => r.id === id);
+      if (!res) return;
+
+      document.getElementById('edit-res-status').value = res.status;
+      
+      const tableSelect = document.getElementById('edit-res-table');
+      tableSelect.innerHTML = '<option value="">-- No table --</option>';
+      tables.forEach(t => {
+        tableSelect.innerHTML += `<option value="${t.id}" ${res.tableId == t.id ? 'selected' : ''}>Table ${t.id} - ${t.capacity} pax</option>`;
+      });
+
+      document.getElementById('edit-res-modal').classList.add('active');
+    };
+
+    window.openConfirmModal = (id, n, g) => {
+      currentConfirmId = id; 
+      const nameEl = document.getElementById('modal-guest-name');
+      const countEl = document.getElementById('modal-guest-count');
+      if (nameEl) nameEl.textContent = n;
+      if (countEl) countEl.textContent = g;
+      
+      const s = document.getElementById('modal-table-select');
+      if (s) {
+        s.innerHTML = '<option value="">-- No table --</option>';
+        tables.forEach(t => s.innerHTML += `<option value="${t.id}">Table ${t.id} - ${t.capacity} pax</option>`);
+      }
+      const modal = document.getElementById('confirm-modal');
+      if (modal) modal.classList.add('active');
+    };
+    
+    const confirmAssignBtn = document.getElementById('btn-confirm-assign');
+    if (confirmAssignBtn) {
+      confirmAssignBtn.addEventListener('click', async () => {
+        const tableId = document.getElementById('modal-table-select').value;
+        if (!tableId) { alert("Please select a table."); return; }
+        
+        confirmAssignBtn.disabled = true;
+        confirmAssignBtn.textContent = "Confirming...";
+        
+        try {
+          await updateDoc(doc(db, "reservations", currentConfirmId), {
+            status: 'confirmed',
+            tableId: tableId,
+            confirmedAt: serverTimestamp()
+          });
+          document.getElementById('confirm-modal').classList.remove('active');
+        } catch (err) {
+          console.error("Confirmation failed:", err);
+          alert("Error: " + err.message);
+        } finally {
+          confirmAssignBtn.disabled = false;
+          confirmAssignBtn.textContent = "Confirm & Notify";
+        }
+      });
+    }
+
+    const saveEditResBtn = document.getElementById('btn-save-edit-res');
+    if (saveEditResBtn) {
+      saveEditResBtn.addEventListener('click', async () => {
+        if (!currentEditId) return;
+        const status = document.getElementById('edit-res-status').value;
+        const tableId = document.getElementById('edit-res-table').value;
+        
+        saveEditResBtn.disabled = true;
+        saveEditResBtn.textContent = "Saving...";
+        
+        try {
+          await updateDoc(doc(db, "reservations", currentEditId), {
+            status: status,
+            tableId: tableId || null,
+            updatedAt: serverTimestamp()
+          });
+          document.getElementById('edit-res-modal').classList.remove('active');
+          alert("Reservation updated.");
+        } catch (err) {
+          console.error("Edit failed:", err);
+          alert("Error: " + err.message);
+        } finally {
+          saveEditResBtn.disabled = false;
+          saveEditResBtn.textContent = "Save Changes";
+        }
+      });
+    }
+
+    const refreshBtn = document.getElementById('btn-refresh');
+    if (refreshBtn) refreshBtn.addEventListener('click', () => location.reload());
+
+    // Add New Reservation Logic
+    const btnAddRes = document.getElementById('btn-add-res');
+    if (btnAddRes) {
+      btnAddRes.addEventListener('click', () => {
+        document.getElementById('add-res-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('add-res-modal').classList.add('active');
+      });
+    }
+
+    const addResForm = document.getElementById('add-res-form');
+    if (addResForm) {
+      addResForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = addResForm.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = "Creating...";
+
+        const newRes = {
+          name: document.getElementById('add-res-name').value,
+          email: document.getElementById('add-res-email').value,
+          phone: document.getElementById('add-res-phone').value,
+          date: document.getElementById('add-res-date').value,
+          time: document.getElementById('add-res-time').value,
+          guests: parseInt(document.getElementById('add-res-pax').value),
+          status: 'confirmed', // Admin added ones are confirmed by default
+          createdAt: serverTimestamp(),
+          source: 'admin'
+        };
+
+        try {
+          await addDoc(collection(db, "reservations"), newRes);
+          document.getElementById('add-res-modal').classList.remove('active');
+          addResForm.reset();
+          alert("Reservation created successfully!");
+        } catch (err) {
+          console.error("Failed to add reservation:", err);
+          alert("Error: " + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Create Reservation";
+        }
+      });
+    }
+
+  </script>
+</body>
+</html>
