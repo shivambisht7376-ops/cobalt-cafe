@@ -261,16 +261,13 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import {
-      getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+      signInWithEmailAndPassword, createUserWithEmailAndPassword,
       signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail,
       onAuthStateChanged, updateProfile
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { firebaseConfig, ADMIN_EMAIL } from "./firebase-config.js";
+    import { auth, ADMIN_EMAIL } from "./firebase-config.js";
 
-    const app  = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
     // If already logged in, redirect
@@ -303,12 +300,15 @@
         "auth/wrong-password":       "Incorrect password. Please try again.",
         "auth/invalid-credential":   "Invalid email or password.",
         "auth/email-already-in-use": "An account with this email already exists.",
-        "auth/weak-password":        "Password must be at least 6 characters.",
+        "auth/weak-password":        "Password must be at least 8 characters.",
         "auth/invalid-email":        "Please enter a valid email address.",
         "auth/popup-closed-by-user": "Google sign-in was cancelled.",
-        "auth/network-request-failed":"Network error — please check your connection.",
+        "auth/network-request-failed":"Network error — check your connection.",
+        "auth/operation-not-allowed": "This sign-in method is not enabled in Firebase Console.",
+        "auth/unauthorized-domain":   "This domain is not authorized in Firebase Console.",
+        "auth/internal-error":        "Firebase internal error. Try again later.",
       };
-      return map[code] || "Something went wrong. Please try again.";
+      return map[code] || `Error (${code}): Something went wrong.`;
     }
 
     // Tab switch
