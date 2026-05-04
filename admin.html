@@ -278,7 +278,13 @@
       <div class="manage-container">
         <div class="panel-header" style="margin-bottom: 20px; border-radius: var(--radius-lg);">
           <h2><span class="material-symbols-outlined">restaurant_menu</span> Menu Items</h2>
-          <div style="display: flex; gap: 10px;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="menu-sort" class="admin-input" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--surface-container-high); font-size: 0.85rem; background: #fff;">
+              <option value="latest">Sort: Latest</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+            </select>
             <button class="btn-action btn-action-danger" id="btn-clear-menu">
               <span class="material-symbols-outlined" style="font-size: 1.1rem;">delete_sweep</span> Clear All
             </button>
@@ -323,7 +329,11 @@
       <div class="manage-container">
         <div class="panel-header" style="margin-bottom: 20px; border-radius: var(--radius-lg);">
           <h2><span class="material-symbols-outlined">gallery_thumbnail</span> Gallery Photos</h2>
-          <div style="display: flex; gap: 10px;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="gallery-sort" class="admin-input" style="padding: 6px 10px; border-radius: 6px; border: 1px solid var(--surface-container-high); font-size: 0.85rem; background: #fff;">
+              <option value="latest">Sort: Latest</option>
+              <option value="category-asc">Category: A to Z</option>
+            </select>
             <button class="btn-action btn-action-danger" id="btn-clear-gallery">
               <span class="material-symbols-outlined" style="font-size: 1.1rem;">delete_sweep</span> Clear All
             </button>
@@ -849,32 +859,57 @@
     }
 
     // --- Menu Management ---
+    let allMenuItems = [];
+    
     function loadMenu() {
       onSnapshot(collection(db, "menu"), (snapshot) => {
-        const table = document.getElementById('menu-items-table');
-        const banner = document.getElementById('migration-banner-menu');
-        if (!table) return;
-        table.innerHTML = '';
-        if (snapshot.empty) { if(banner) banner.style.display = 'flex'; return; }
-        if (banner) banner.style.display = 'none';
+        allMenuItems = [];
         snapshot.forEach(docSnap => {
-          const item = { id: docSnap.id, ...docSnap.data() };
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td><img src="${item.image || 'espresso.png'}" class="item-thumb"></td>
-            <td><strong>${item.name}</strong><br><small>${item.description.substring(0, 40)}...</small></td>
-            <td><span class="tag">${item.category}</span></td>
-            <td>₹${item.price}</td>
-            <td>${item.tag || '-'}</td>
-            <td>
-              <div class="action-btns">
-                <button class="btn-icon" onclick="editMenuItem('${item.id}')"><span class="material-symbols-outlined">edit</span></button>
-                <button class="btn-icon delete" onclick="deleteMenuItem('${item.id}')"><span class="material-symbols-outlined">delete</span></button>
-              </div>
-            </td>
-          `;
-          table.appendChild(tr);
+          allMenuItems.push({ id: docSnap.id, ...docSnap.data() });
         });
+        renderMenu();
+      });
+      
+      const sortSelect = document.getElementById('menu-sort');
+      if (sortSelect) sortSelect.addEventListener('change', renderMenu);
+    }
+
+    function renderMenu() {
+      const table = document.getElementById('menu-items-table');
+      const banner = document.getElementById('migration-banner-menu');
+      if (!table) return;
+      table.innerHTML = '';
+      
+      if (allMenuItems.length === 0) { 
+        if(banner) banner.style.display = 'flex'; 
+        return; 
+      }
+      if (banner) banner.style.display = 'none';
+      
+      const sortType = document.getElementById('menu-sort')?.value || 'latest';
+      
+      let sortedItems = [...allMenuItems];
+      if (sortType === 'price-asc') sortedItems.sort((a, b) => a.price - b.price);
+      else if (sortType === 'price-desc') sortedItems.sort((a, b) => b.price - a.price);
+      else if (sortType === 'name-asc') sortedItems.sort((a, b) => a.name.localeCompare(b.name));
+      else sortedItems.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+
+      sortedItems.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><img src="${item.image || 'espresso.png'}" class="item-thumb"></td>
+          <td><strong>${item.name}</strong><br><small>${item.description.substring(0, 40)}...</small></td>
+          <td><span class="tag">${item.category}</span></td>
+          <td>₹${item.price}</td>
+          <td>${item.tag || '-'}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon" onclick="editMenuItem('${item.id}')"><span class="material-symbols-outlined">edit</span></button>
+              <button class="btn-icon delete" onclick="deleteMenuItem('${item.id}')"><span class="material-symbols-outlined">delete</span></button>
+            </div>
+          </td>
+        `;
+        table.appendChild(tr);
       });
     }
 
@@ -944,29 +979,52 @@
     }
 
     // --- Gallery Management ---
+    let allGalleryItems = [];
+
     function loadGallery() {
       onSnapshot(collection(db, "gallery"), (snapshot) => {
-        const grid = document.getElementById('gallery-items-grid');
-        const banner = document.getElementById('migration-banner-gallery');
-        if (!grid) return;
-        grid.innerHTML = '';
-        if (snapshot.empty) { if(banner) banner.style.display = 'flex'; return; }
-        if (banner) banner.style.display = 'none';
+        allGalleryItems = [];
         snapshot.forEach(docSnap => {
-          const item = { id: docSnap.id, ...docSnap.data() };
-          const div = document.createElement('div');
-          div.className = 'gallery-manage-item';
-          div.innerHTML = `
-            <img src="${item.image}" class="gallery-manage-img">
-            <div class="gallery-manage-actions">
-              <button class="btn-mini" onclick="deleteGalleryItem('${item.id}')"><span class="material-symbols-outlined" style="color:var(--error);font-size:18px;">delete</span></button>
-            </div>
-            <div class="gallery-manage-info">
-              <strong>${item.category}</strong><br>${item.caption}
-            </div>
-          `;
-          grid.appendChild(div);
+          allGalleryItems.push({ id: docSnap.id, ...docSnap.data() });
         });
+        renderGallery();
+      });
+
+      const sortSelect = document.getElementById('gallery-sort');
+      if (sortSelect) sortSelect.addEventListener('change', renderGallery);
+    }
+
+    function renderGallery() {
+      const grid = document.getElementById('gallery-items-grid');
+      const banner = document.getElementById('migration-banner-gallery');
+      if (!grid) return;
+      grid.innerHTML = '';
+      
+      if (allGalleryItems.length === 0) { 
+        if(banner) banner.style.display = 'flex'; 
+        return; 
+      }
+      if (banner) banner.style.display = 'none';
+
+      const sortType = document.getElementById('gallery-sort')?.value || 'latest';
+      
+      let sortedItems = [...allGalleryItems];
+      if (sortType === 'category-asc') sortedItems.sort((a, b) => a.category.localeCompare(b.category));
+      else sortedItems.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
+
+      sortedItems.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'gallery-manage-item';
+        div.innerHTML = `
+          <img src="${item.image}" class="gallery-manage-img">
+          <div class="gallery-manage-actions">
+            <button class="btn-mini" onclick="deleteGalleryItem('${item.id}')"><span class="material-symbols-outlined" style="color:var(--error);font-size:18px;">delete</span></button>
+          </div>
+          <div class="gallery-manage-info">
+            <strong>${item.category}</strong><br>${item.caption}
+          </div>
+        `;
+        grid.appendChild(div);
       });
     }
 
