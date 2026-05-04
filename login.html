@@ -275,7 +275,7 @@
       signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail,
       onAuthStateChanged, updateProfile
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import { auth, ADMIN_EMAIL } from "./firebase-config.js";
+    import { auth, ADMIN_EMAILS } from "./firebase-config.js";
 
     const provider = new GoogleAuthProvider();
 
@@ -285,7 +285,7 @@
     });
 
     function redirectUser(user) {
-      if (user.email === ADMIN_EMAIL) {
+      if (user.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
         window.location.href = "admin.html";
       } else {
         const returnTo = new URLSearchParams(window.location.search).get("return") || "index.html";

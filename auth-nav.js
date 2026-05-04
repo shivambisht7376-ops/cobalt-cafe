@@ -1,5 +1,5 @@
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { auth, ADMIN_EMAIL } from "./firebase-config.js";
+import { auth, ADMIN_EMAILS } from "./firebase-config.js";
 
 // Update Header Navigation based on Auth State
 onAuthStateChanged(auth, user => {
@@ -14,7 +14,7 @@ onAuthStateChanged(auth, user => {
     // User is signed in
     const displayName = user.displayName || user.email.split('@')[0];
     const initial = displayName.charAt(0).toUpperCase();
-    const isAdmin = user.email === ADMIN_EMAIL;
+    const isAdmin = user.email && ADMIN_EMAILS.includes(user.email.toLowerCase());
     
     const userMenu = document.createElement('div');
     userMenu.className = 'user-menu';

@@ -26,7 +26,10 @@ const storage = getStorage(app);
 export { app, auth, db, storage };
 
 // Admin email — only this account can access the admin portal
-export const ADMIN_EMAIL = "shivamzi953@gmail.com";
+export const ADMIN_EMAILS = [
+  "shivamzi953@gmail.com",
+  "shivambisht935@gmail.com"
+];
 
 // Total tables in the cafe
 export const TOTAL_TABLES = 15;
