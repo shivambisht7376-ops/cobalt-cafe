@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>My Bookings | Cobalt Caffe</title>
+  <meta name="google-site-verification" content="ekmTX-F7lLiSgvQeB9TSimm4LwY8cvY0XLvTNoXVVIE" />
+  <meta name="description" content="View and manage your table reservations at Cobalt Caffe.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -70,7 +72,40 @@
 
   <footer class="footer">
     <div class="container">
-      <div class="footer-bottom"><p>© 2024 Cobalt Caffe. Crafted with Modern Heritage.</p></div>
+      <div class="footer-grid">
+        <div>
+          <div class="footer-logo">Cobalt Caffe</div>
+          <p style="color:var(--on-surface-variant);max-width:280px;">Elevating coffee culture since 2024. Your urban hub for precision brewing and modern ambiance.</p>
+        </div>
+        <div>
+          <h4>Pages</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="menu.html">Menu</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Social</h4>
+          <ul class="footer-links">
+            <li><a href="https://instagram.com/cobaltcaffe" target="_blank" rel="noopener">Instagram</a></li>
+            <li><a href="https://facebook.com/cobaltcaffe" target="_blank" rel="noopener">Facebook</a></li>
+            <li><a href="https://twitter.com/cobaltcaffe" target="_blank" rel="noopener">Twitter / X</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Newsletter</h4>
+          <p style="color:var(--on-surface-variant);font-size:.9rem;margin-bottom:12px;">Get updates on events and specials.</p>
+          <div class="newsletter">
+            <input type="email" placeholder="Your email" id="newsletter-email-dash">
+            <button class="btn-send" id="newsletter-send-dash"><span class="material-symbols-outlined" style="font-size:1rem;">send</span></button>
+          </div>
+          <span class="newsletter-toast" id="newsletter-toast-dash">✓ You're subscribed!</span>
+        </div>
+      </div>
+      <div class="footer-bottom"><p>© <span id="year-dash"></span> Cobalt Caffe. Crafted with Modern Heritage.</p></div>
     </div>
   </footer>
 
@@ -87,6 +122,33 @@
       }
       loadUserBookings(user.email);
     });
+
+    // Hamburger
+    const hamburger = document.getElementById('hamburger');
+    if (hamburger) hamburger.addEventListener('click', () =>
+      document.getElementById('main-nav').classList.toggle('open'));
+
+    // Auto copyright year
+    const yearEl = document.getElementById('year-dash');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // Newsletter
+    const nlSend = document.getElementById('newsletter-send-dash');
+    if (nlSend) {
+      nlSend.addEventListener('click', () => {
+        const input = document.getElementById('newsletter-email-dash');
+        const toast = document.getElementById('newsletter-toast-dash');
+        const email = input.value.trim();
+        if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+          input.style.borderColor = 'var(--error)';
+          setTimeout(() => input.style.borderColor = '', 2000);
+          return;
+        }
+        input.value = '';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      });
+    }
 
     // Safety fallback: if anything hangs, show a message
     setTimeout(() => {

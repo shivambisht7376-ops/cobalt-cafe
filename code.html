@@ -293,14 +293,28 @@
 <h4 class="font-bold text-stone-800 dark:text-stone-200 mb-4">Newsletter</h4>
 <div class="flex">
 <input class="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 px-3 py-2 rounded-l-lg w-full focus:outline-none" placeholder="Your email" type="email"/>
-<button class="bg-primary text-on-primary px-4 py-2 rounded-r-lg">
+<button class="bg-primary text-on-primary px-4 py-2 rounded-r-lg" id="nl-send-code">
 <span class="material-symbols-outlined text-sm" data-icon="send">send</span>
 </button>
 </div>
 </div>
 </div>
 <div class="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-stone-200 dark:border-stone-800 text-center text-stone-500 dark:text-stone-400">
-            © 2024 Cobalt Caffe. Crafted with Modern Heritage.
+            &copy; <span id="year-code"></span> Cobalt Caffe. Crafted with Modern Heritage.
         </div>
 </footer>
+<script>
+  document.getElementById('year-code').textContent = new Date().getFullYear();
+  const nlBtn = document.getElementById('nl-send-code');
+  if (nlBtn) nlBtn.addEventListener('click', () => {
+    const input = nlBtn.previousElementSibling;
+    const email = (input && input.value || '').trim();
+    if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      if (input) { input.style.borderColor = '#ba1a1a'; setTimeout(() => input.style.borderColor = '', 2000); }
+      return;
+    }
+    if (input) input.value = '';
+    alert('\u2713 You\'re subscribed!');
+  });
+</script>
 </body></html>

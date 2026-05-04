@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gallery | Cobalt Caffe</title>
+  <meta name="google-site-verification" content="ekmTX-F7lLiSgvQeB9TSimm4LwY8cvY0XLvTNoXVVIE" />
   <meta name="description" content="Browse the ambiance, drinks, and moments that make Cobalt Caffe a truly unique heritage coffee experience.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -162,22 +163,22 @@
         <h2>Upcoming Events</h2>
         <div class="events-grid">
           <div class="event-card">
-            <div class="event-date">Sat, 3 May 2025</div>
+            <div class="event-date">Sat, 7 Jun 2026</div>
             <h3 class="event-title">Latte Art Workshop</h3>
             <p class="event-desc">Learn the basics of milk texturing and latte art with our head barista. Free for regulars.</p>
           </div>
           <div class="event-card">
-            <div class="event-date">Fri, 9 May 2025</div>
+            <div class="event-date">Fri, 13 Jun 2026</div>
             <h3 class="event-title">Open Mic Night</h3>
             <p class="event-desc">Bring your voice, your guitar, or just your ears. Every second Friday, doors open at 7 PM.</p>
           </div>
           <div class="event-card">
-            <div class="event-date">Sun, 18 May 2025</div>
+            <div class="event-date">Sun, 22 Jun 2026</div>
             <h3 class="event-title">Heritage Photo Walk</h3>
             <p class="event-desc">A guided walk through the Artisan District ending with brunch at Cobalt Caffe.</p>
           </div>
           <div class="event-card">
-            <div class="event-date">Sat, 24 May 2025</div>
+            <div class="event-date">Sat, 28 Jun 2026</div>
             <h3 class="event-title">Coffee Origin Tasting</h3>
             <p class="event-desc">A curated tasting of 5 single-origin beans. Tickets: ₹600 (includes full breakfast).</p>
           </div>
@@ -227,12 +228,13 @@
           <h4>Newsletter</h4>
           <p style="color:var(--on-surface-variant);font-size:.9rem;margin-bottom:12px;">Get updates on events and specials.</p>
           <div class="newsletter">
-            <input type="email" placeholder="Your email">
-            <button class="btn-send"><span class="material-symbols-outlined" style="font-size:1rem;">send</span></button>
+            <input type="email" placeholder="Your email" id="newsletter-email-gallery">
+            <button class="btn-send" id="newsletter-send-gallery"><span class="material-symbols-outlined" style="font-size:1rem;">send</span></button>
           </div>
+          <span class="newsletter-toast" id="newsletter-toast-gallery">✓ You're subscribed!</span>
         </div>
       </div>
-      <div class="footer-bottom"><p>© 2024 Cobalt Caffe. Crafted with Modern Heritage.</p></div>
+      <div class="footer-bottom"><p>© <span id="year-gallery"></span> Cobalt Caffe. Crafted with Modern Heritage.</p></div>
     </div>
   </footer>
 
@@ -307,25 +309,50 @@
     });
 
     // Load Gallery from Firestore
+    const PLACEHOLDER_ITEMS = [
+      { category: 'drinks',  caption: 'Signature Espresso', emoji: '☕' },
+      { category: 'space',   caption: 'Our Cozy Interior', emoji: '🏙️' },
+      { category: 'food',    caption: 'Artisan Pastries', emoji: '🥐' },
+      { category: 'drinks',  caption: 'Cold Brew Delight', emoji: '🧊' },
+      { category: 'events',  caption: 'Live Open Mic', emoji: '🎵' },
+      { category: 'space',   caption: 'The Counter', emoji: '✨' },
+    ];
+
     function loadGallery() {
       const q = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
       onSnapshot(q, (snapshot) => {
         galleryGrid.innerHTML = '';
-        snapshot.forEach(docSnap => {
-          const data = docSnap.data();
+
+        const items = snapshot.empty ? PLACEHOLDER_ITEMS : [];
+        if (!snapshot.empty) {
+          snapshot.forEach(docSnap => items.push({ ...docSnap.data(), _id: docSnap.id }));
+        }
+
+        items.forEach(data => {
           const item = document.createElement('div');
           item.className = 'g-item reveal visible';
           item.dataset.category = data.category;
           item.dataset.caption = data.caption;
-          
-          item.innerHTML = `
-            <img src="${data.image}" alt="${data.caption}">
-            <div class="g-overlay">
-              <span class="material-symbols-outlined">zoom_in</span>
-              <p>${data.caption}</p>
-            </div>
-          `;
-          
+
+          if (data.image) {
+            item.innerHTML = `
+              <img src="${data.image}" alt="${data.caption}">
+              <div class="g-overlay">
+                <span class="material-symbols-outlined">zoom_in</span>
+                <p>${data.caption}</p>
+              </div>
+            `;
+          } else {
+            // Emoji placeholder tile
+            item.innerHTML = `
+              <div class="g-placeholder" style="font-size:5rem; background:var(--surface-container); display:flex; align-items:center; justify-content:center; aspect-ratio:4/3; width:100%;">${data.emoji || '📷'}</div>
+              <div class="g-overlay">
+                <span class="material-symbols-outlined">zoom_in</span>
+                <p>${data.caption}</p>
+              </div>
+            `;
+          }
+
           item.addEventListener('click', () => openLightbox(item));
           galleryGrid.appendChild(item);
         });
@@ -334,6 +361,28 @@
     }
 
     loadGallery();
+
+    // Auto copyright year
+    const yearEl = document.getElementById('year-gallery');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // Newsletter
+    const nlSend = document.getElementById('newsletter-send-gallery');
+    if (nlSend) {
+      nlSend.addEventListener('click', () => {
+        const input = document.getElementById('newsletter-email-gallery');
+        const toast = document.getElementById('newsletter-toast-gallery');
+        const email = input.value.trim();
+        if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+          input.style.borderColor = 'var(--error)';
+          setTimeout(() => input.style.borderColor = '', 2000);
+          return;
+        }
+        input.value = '';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      });
+    }
 
     document.addEventListener('keydown', e => {
       if(!lb.classList.contains('open')) return;
@@ -346,6 +395,7 @@
     const obs = new IntersectionObserver(entries => {
       entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); }});
     }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   </script>
 </body>
 </html>

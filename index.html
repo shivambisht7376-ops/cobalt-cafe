@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cobalt Caffe | Elevated Coffee Culture</title>
+  <meta name="google-site-verification" content="ekmTX-F7lLiSgvQeB9TSimm4LwY8cvY0XLvTNoXVVIE" />
   <meta name="description" content="Experience the next evolution of coffee culture at Cobalt Caffe. Where precision brewing meets modern urban design in the heart of the city.">
   <link rel="canonical" href="https://cobaltcaffe.com/">
   
@@ -178,12 +179,13 @@
           <p style="color:var(--on-surface-variant);font-size:.9rem;margin-bottom:12px;">Get updates on events and specials.</p>
           <div class="newsletter">
             <input type="email" placeholder="Your email" id="newsletter-email">
-            <button class="btn-send"><span class="material-symbols-outlined" style="font-size:1rem;">send</span></button>
+            <button class="btn-send" id="newsletter-send"><span class="material-symbols-outlined" style="font-size:1rem;">send</span></button>
           </div>
+          <span class="newsletter-toast" id="newsletter-toast">✓ You're subscribed!</span>
         </div>
       </div>
       <div class="footer-bottom">
-        <p>© 2024 Cobalt Caffe. Crafted with Modern Heritage.</p>
+        <p>© <span id="year-home"></span> Cobalt Caffe. Crafted with Modern Heritage.</p>
       </div>
     </div>
   </footer>
@@ -193,6 +195,29 @@
     import { db } from "./firebase-config.js";
     import "./auth-nav.js";
 
+
+    // Auto copyright year
+    const yearEl = document.getElementById('year-home');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    // Newsletter
+    const newsletterSend = document.getElementById('newsletter-send');
+    if (newsletterSend) {
+      newsletterSend.addEventListener('click', () => {
+        const input = document.getElementById('newsletter-email');
+        const toast = document.getElementById('newsletter-toast');
+        const email = input.value.trim();
+        if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+          input.style.borderColor = 'var(--error)';
+          setTimeout(() => input.style.borderColor = '', 2000);
+          return;
+        }
+        input.value = '';
+        input.style.borderColor = '';
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      });
+    }
 
     // Hamburger
     const hamburger = document.getElementById('hamburger');
@@ -208,8 +233,20 @@
         const snapshot = await getDocs(q);
         
         container.innerHTML = '';
+        if (snapshot.empty) {
+          container.innerHTML = `
+            <div class="card" style="grid-column:span 2; text-align:center; padding:var(--space-lg); color:var(--on-surface-variant);">
+              <span class="material-symbols-outlined" style="font-size:3rem; display:block; margin-bottom:12px;">coffee</span>
+              <p>Our menu is being updated. Check back soon!</p>
+              <a href="menu.html" class="btn btn-secondary" style="margin-top:16px; display:inline-flex;">View Menu</a>
+            </div>
+          `;
+          // Still add CTA
+          return;
+        }
         snapshot.forEach(docSnap => {
           const item = docSnap.data();
+          const desc = item.description ? item.description.substring(0, 80) + '...' : 'A carefully crafted specialty drink.';
           const card = document.createElement('div');
           card.className = 'card menu-card reveal visible';
           card.innerHTML = `
@@ -218,7 +255,7 @@
             </div>
             <div style="padding-top:var(--space-md);">
               <h3 class="menu-card-title">${item.name}</h3>
-              <p class="menu-card-desc">${item.description.substring(0, 80)}...</p>
+              <p class="menu-card-desc">${desc}</p>
               <div class="menu-card-footer">
                 <span class="menu-price">₹${item.price}</span>
                 ${item.tag ? `<span class="tag">${item.tag}</span>` : ''}

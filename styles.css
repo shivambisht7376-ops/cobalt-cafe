@@ -5,6 +5,7 @@
 :root {
   --surface: #fcf9f8;
   --surface-dim: #dcd9d9;
+  --surface-bright: #ffffff;
   --surface-container-lowest: #ffffff;
   --surface-container-low: #f6f3f2;
   --surface-container: #f0eded;
@@ -23,6 +24,11 @@
   --on-secondary-container: #546a2e;
   --background: #fcf9f8;
   --on-background: #1b1c1c;
+  /* Error / destructive colours */
+  --error: #ba1a1a;
+  --on-error: #ffffff;
+  --error-container: #ffdad6;
+  --on-error-container: #93000a;
   --font-heading: 'Noto Serif', serif;
   --font-body: 'Plus Jakarta Sans', sans-serif;
   --space-xs: 4px;
@@ -215,7 +221,13 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--sec
 .footer-links a:hover { color:var(--primary); text-decoration:underline; }
 .newsletter { display:flex; }
 .newsletter input { flex:1; border-top-right-radius:0; border-bottom-right-radius:0; }
-.btn-send { background:var(--primary); color:var(--on-primary); border:none; padding:0 15px; border-radius:0 var(--radius-default) var(--radius-default) 0; cursor:pointer; }
+.btn-send { background:var(--primary); color:var(--on-primary); border:none; padding:0 15px; border-radius:0 var(--radius-default) var(--radius-default) 0; cursor:pointer; transition:opacity .2s ease; }
+.btn-send:hover { opacity:.85; }
+.newsletter-toast {
+  display:inline-block; margin-top:8px; font-size:.8rem; color:var(--secondary);
+  font-weight:600; opacity:0; transition:opacity .4s ease;
+}
+.newsletter-toast.show { opacity:1; }
 .footer-bottom { text-align:center; padding-top:var(--space-md); border-top:1px solid var(--surface-container-high); font-size:.875rem; color:var(--on-surface-variant); }
 
 /* ---- Scroll Reveal ---- */
