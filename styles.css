@@ -670,17 +670,6 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--sec
   }
 }
 
-/* ---- Fire Cursor Trail (applied via JS) ---- */
-.fire-cursor-dot {
-  position: fixed;
-  width: 8px; height: 8px;
-  background: radial-gradient(circle, #ffcc00, #ff4500, transparent);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9998;
-  animation: emberFloat 1s ease-out forwards;
-  transform-origin: center;
-}
 
 /* ---- Card Image Glow on hover ---- */
 .card-image:hover {

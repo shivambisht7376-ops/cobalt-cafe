@@ -88,25 +88,6 @@
   });
 })();
 
-// ============================================
-//  FIRE CURSOR TRAIL
-// ============================================
-(function initFireCursor() {
-  let lx = -999, ly = -999, thr = false;
-  document.addEventListener('mousemove', ev => {
-    if (thr) return;
-    thr = true;
-    setTimeout(() => { thr = false; }, 38);
-    if (Math.abs(ev.clientX - lx) < 4 && Math.abs(ev.clientY - ly) < 4) return;
-    lx = ev.clientX; ly = ev.clientY;
-    const dot = document.createElement('div');
-    dot.className = 'fire-cursor-dot';
-    const sz = Math.random() * 8 + 6;
-    dot.style.cssText = `left:${ev.clientX - sz/2}px;top:${ev.clientY - sz/2}px;width:${sz}px;height:${sz}px;--drift:${(Math.random()-.5)*30}px;`;
-    document.body.appendChild(dot);
-    setTimeout(() => dot.remove(), 1000);
-  });
-})();
 
 // ============================================
 //  DIRECTIONAL SCROLL-IN ANIMATION SYSTEM
