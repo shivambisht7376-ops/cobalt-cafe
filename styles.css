@@ -587,6 +587,89 @@ input:focus, select:focus, textarea:focus { outline:none; border-color:var(--sec
 }
 .reveal.visible { opacity:1; transform:translateY(0); }
 
+/* ---- Directional Scroll-In Animations ---- */
+/* From Left */
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-80px) scale(0.96);
+  transition:
+    opacity .75s cubic-bezier(.22,1,.36,1),
+    transform .75s cubic-bezier(.22,1,.36,1);
+}
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+/* From Right */
+.reveal-right {
+  opacity: 0;
+  transform: translateX(80px) scale(0.96);
+  transition:
+    opacity .75s cubic-bezier(.22,1,.36,1),
+    transform .75s cubic-bezier(.22,1,.36,1);
+}
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+
+/* From Bottom */
+.reveal-bottom {
+  opacity: 0;
+  transform: translateY(70px) scale(0.97);
+  transition:
+    opacity .75s cubic-bezier(.22,1,.36,1),
+    transform .75s cubic-bezier(.22,1,.36,1);
+}
+.reveal-bottom.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* From Top */
+.reveal-top {
+  opacity: 0;
+  transform: translateY(-70px) scale(0.97);
+  transition:
+    opacity .75s cubic-bezier(.22,1,.36,1),
+    transform .75s cubic-bezier(.22,1,.36,1);
+}
+.reveal-top.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Zoom In */
+.reveal-zoom {
+  opacity: 0;
+  transform: scale(0.82);
+  transition:
+    opacity .75s cubic-bezier(.22,1,.36,1),
+    transform .75s cubic-bezier(.22,1,.36,1);
+}
+.reveal-zoom.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Delay helpers */
+.delay-1 { transition-delay: 0.1s !important; }
+.delay-2 { transition-delay: 0.2s !important; }
+.delay-3 { transition-delay: 0.3s !important; }
+.delay-4 { transition-delay: 0.4s !important; }
+.delay-5 { transition-delay: 0.5s !important; }
+
+/* Mobile: disable side-in animations to prevent overflow */
+@media (max-width: 768px) {
+  .reveal-left, .reveal-right {
+    transform: translateY(40px) scale(0.97);
+  }
+  .reveal-left.visible, .reveal-right.visible {
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* ---- Fire Cursor Trail (applied via JS) ---- */
 .fire-cursor-dot {
   position: fixed;

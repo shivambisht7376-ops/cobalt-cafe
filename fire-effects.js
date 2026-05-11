@@ -109,26 +109,117 @@
 })();
 
 // ============================================
-//  STAGGERED CARD ENTRANCE
+//  DIRECTIONAL SCROLL-IN ANIMATION SYSTEM
 // ============================================
-(function staggerCards() {
-  const cards = document.querySelectorAll('.card, .value-card, .stat-card, .info-card');
-  const obs = new IntersectionObserver(entries => {
+(function initDirectionalReveal() {
+  const DIRECTIONS = ['reveal-left','reveal-right','reveal-bottom','reveal-top','reveal-zoom'];
+  const allSelectors = [
+    '.reveal-left', '.reveal-right', '.reveal-bottom',
+    '.reveal-top', '.reveal-zoom', '.reveal'
+  ].join(',');
+
+  // Prevent horizontal scroll caused by off-screen elements
+  document.body.style.overflowX = 'hidden';
+
+  // --- Bento Grid: left card ← | middle ↑ | right card → ---
+  const bentoCards = document.querySelectorAll('.bento-grid .card');
+  const bDirs = ['reveal-left', 'reveal-bottom', 'reveal-right'];
+  bentoCards.forEach((card, i) => {
+    card.classList.add(bDirs[i % bDirs.length]);
+    if (i > 0) card.classList.add(`delay-${Math.min(i, 5)}`);
+  });
+
+  // --- Menu / Item cards: fan in alternating left ↔ right ---
+  const menuCards = document.querySelectorAll(
+    '.menu-card, .menu-item-card, #featured-menu-grid .card'
+  );
+  menuCards.forEach((card, i) => {
+    card.classList.add(i % 2 === 0 ? 'reveal-left' : 'reveal-right');
+    card.classList.add(`delay-${Math.min((i % 4) + 1, 5)}`);
+  });
+
+  // --- Value cards: left → right → left → right ---
+  const valueCards = document.querySelectorAll('.value-card');
+  valueCards.forEach((card, i) => {
+    card.classList.add(i % 2 === 0 ? 'reveal-left' : 'reveal-right');
+    card.classList.add(`delay-${Math.min(i + 1, 5)}`);
+  });
+
+  // --- Stat cards: zoom in with stagger ---
+  const statCards = document.querySelectorAll('.stat-card');
+  statCards.forEach((card, i) => {
+    card.classList.add('reveal-zoom');
+    card.classList.add(`delay-${Math.min(i + 1, 5)}`);
+  });
+
+  // --- About story: text from left, image from right ---
+  const aboutStory = document.querySelector('.about-story');
+  if (aboutStory) {
+    const [textCol, imgCol] = aboutStory.children;
+    if (textCol) textCol.classList.add('reveal-left');
+    if (imgCol)  imgCol.classList.add('reveal-right');
+  }
+
+  // --- Team cards inside about: alternating bottom + zoom ---
+  const teamCardRows = document.querySelectorAll('.about-story ~ * .card, .timeline-team-grid .card');
+  teamCardRows.forEach((card, i) => {
+    card.classList.add(i % 2 === 0 ? 'reveal-left' : 'reveal-right');
+    card.classList.add(`delay-${Math.min(i + 1, 5)}`);
+  });
+
+  // --- Gallery items: fan from all directions ---
+  const galleryItems = document.querySelectorAll('.g-item');
+  const gDirs = ['reveal-left','reveal-bottom','reveal-right','reveal-zoom'];
+  galleryItems.forEach((item, i) => {
+    item.classList.add(gDirs[i % gDirs.length]);
+  });
+
+  // --- Section headings: drop from top ---
+  document.querySelectorAll('.section-title').forEach(el => {
+    if (!el.closest('.hero')) {
+      el.classList.add('reveal-top');
+    }
+  });
+
+  // --- Section labels: slide from left ---
+  document.querySelectorAll('.section-label').forEach(el => {
+    el.classList.add('reveal-left');
+  });
+
+  // --- Info blocks on contact page: alternating ---
+  document.querySelectorAll('.info-block').forEach((block, i) => {
+    block.classList.add(i % 2 === 0 ? 'reveal-left' : 'reveal-right');
+  });
+
+  // --- Contact form card: from right ---
+  const contactFormCard = document.querySelector('.contact-form-card');
+  if (contactFormCard) contactFormCard.classList.add('reveal-right');
+
+  // --- Quote block: zoom in ---
+  const quoteBlock = document.querySelector('.quote-block');
+  if (quoteBlock) quoteBlock.classList.add('reveal-zoom');
+
+  // --- Footer grid columns: fan in from bottom ---
+  document.querySelectorAll('.footer-grid > div').forEach((col, i) => {
+    col.classList.add('reveal-bottom');
+    col.classList.add(`delay-${Math.min(i + 1, 5)}`);
+  });
+
+  // --- IntersectionObserver for ALL directional classes ---
+  const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        const i = Array.from(cards).indexOf(entry.target);
-        entry.target.style.transitionDelay = `${(i % 5) * 0.1}s`;
-        entry.target.style.opacity = '1';
-        entry.target.style.transform = 'translateY(0)';
-        obs.unobserve(entry.target);
+        entry.target.classList.add('visible');
+        revealObserver.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.12 });
+  }, {
+    threshold: 0.12,
+    rootMargin: '0px 0px -40px 0px'
+  });
 
-  cards.forEach(c => {
-    c.style.opacity = '0';
-    c.style.transform = 'translateY(22px)';
-    c.style.transition = 'opacity .65s ease, transform .65s ease';
-    obs.observe(c);
+  document.querySelectorAll(allSelectors).forEach(el => {
+    revealObserver.observe(el);
   });
 })();
+
