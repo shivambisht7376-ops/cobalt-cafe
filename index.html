@@ -28,6 +28,8 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Ember Canvas Particle Layer -->
+  <canvas id="ember-canvas" aria-hidden="true"></canvas>
 
   <!-- Header -->
   <header class="header">
@@ -292,6 +294,158 @@
       entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); observer.unobserve(e.target); } });
     }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
     reveals.forEach(el => observer.observe(el));
+
+    // ============================================
+    //  EMBER PARTICLE CANVAS SYSTEM
+    // ============================================
+    (function initEmberCanvas() {
+      const canvas = document.getElementById('ember-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const EMBER_COUNT = 55;
+      const embers = [];
+
+      function randomBetween(a, b) { return a + Math.random() * (b - a); }
+
+      function spawnEmber(forceX) {
+        const x = forceX !== undefined ? forceX : randomBetween(0, canvas.width);
+        return {
+          x,
+          y: randomBetween(canvas.height * 0.4, canvas.height + 40),
+          vx: randomBetween(-0.6, 0.6),
+          vy: randomBetween(-1.8, -0.7),
+          size: randomBetween(1.5, 4.5),
+          opacity: randomBetween(0.6, 1),
+          life: 0,
+          maxLife: randomBetween(80, 200),
+          hue: randomBetween(15, 45),  // orange-yellow range
+        };
+      }
+
+      for (let i = 0; i < EMBER_COUNT; i++) {
+        const e = spawnEmber();
+        e.life = randomBetween(0, e.maxLife); // stagger start
+        embers.push(e);
+      }
+
+      function drawEmber(e) {
+        const progress = e.life / e.maxLife;
+        const alpha = e.opacity * (1 - Math.pow(progress, 1.5));
+        const r = e.size * (1 - progress * 0.5);
+
+        // Core glow
+        const grad = ctx.createRadialGradient(e.x, e.y, 0, e.x, e.y, r * 3.5);
+        grad.addColorStop(0, `hsla(${e.hue}, 100%, 80%, ${alpha})`);
+        grad.addColorStop(0.4, `hsla(${e.hue - 10}, 100%, 60%, ${alpha * 0.7})`);
+        grad.addColorStop(1, `hsla(${e.hue - 20}, 100%, 40%, 0)`);
+
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, r * 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = grad;
+        ctx.fill();
+
+        // Bright core
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, r * 0.5, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(60, 100%, 95%, ${alpha})`;
+        ctx.fill();
+      }
+
+      let frameId;
+      function tick() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        embers.forEach((e, i) => {
+          // Wavy drift
+          const wobble = Math.sin(e.life * 0.08 + i) * 0.4;
+          e.x += e.vx + wobble;
+          e.y += e.vy;
+          e.life++;
+
+          drawEmber(e);
+
+          if (e.life >= e.maxLife) {
+            embers[i] = spawnEmber();
+          }
+        });
+
+        frameId = requestAnimationFrame(tick);
+      }
+      tick();
+
+      // Pause when tab hidden
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) cancelAnimationFrame(frameId);
+        else tick();
+      });
+    })();
+
+    // ============================================
+    //  FIRE CURSOR TRAIL
+    // ============================================
+    (function initFireCursor() {
+      let lastX = -999, lastY = -999;
+      let throttle = false;
+
+      document.addEventListener('mousemove', (e) => {
+        if (throttle) return;
+        throttle = true;
+        setTimeout(() => { throttle = false; }, 40);
+
+        const dx = Math.abs(e.clientX - lastX);
+        const dy = Math.abs(e.clientY - lastY);
+        if (dx < 4 && dy < 4) return;
+
+        lastX = e.clientX;
+        lastY = e.clientY;
+
+        const dot = document.createElement('div');
+        dot.className = 'fire-cursor-dot';
+        const size = Math.random() * 8 + 6;
+        dot.style.cssText = `
+          left: ${e.clientX - size / 2}px;
+          top: ${e.clientY - size / 2}px;
+          width: ${size}px;
+          height: ${size}px;
+          --drift: ${(Math.random() - 0.5) * 30}px;
+        `;
+        document.body.appendChild(dot);
+        setTimeout(() => dot.remove(), 1000);
+      });
+    })();
+
+    // ============================================
+    //  STAGGERED CARD ENTRANCE
+    // ============================================
+    (function staggerCards() {
+      const cards = document.querySelectorAll('.card, .value-card');
+      const cardObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry, idx) => {
+          if (entry.isIntersecting) {
+            const i = Array.from(cards).indexOf(entry.target);
+            entry.target.style.transitionDelay = `${(i % 4) * 0.12}s`;
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+            cardObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15 });
+
+      cards.forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(24px)';
+        card.style.transition = 'opacity .7s ease, transform .7s ease';
+        cardObserver.observe(card);
+      });
+    })();
 
     // Nav smooth scroll on same page anchors
     document.querySelectorAll('a[href^="#"]').forEach(a => {

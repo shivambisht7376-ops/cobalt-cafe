@@ -32,6 +32,7 @@
   </style>
 </head>
 <body>
+  <canvas id="ember-canvas" aria-hidden="true"></canvas>
 
   <header class="header">
     <div class="container">
@@ -290,5 +291,6 @@
     }, { threshold: 0.08 });
     reveals.forEach(el => obs.observe(el));
   </script>
+  <script src="fire-effects.js"></script>
 </body>
 </html>
